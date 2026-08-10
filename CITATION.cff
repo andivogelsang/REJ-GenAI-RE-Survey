@@ -1,0 +1,52 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the paper below. A journal extension covering round 2 is in preparation; this entry will be updated once it has its own DOI."
+title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+type: software
+authors:
+  - family-names: Hess
+    given-names: Anne
+    orcid: "https://orcid.org/0000-0001-7614-5802"
+    affiliation: "Technical University of Applied Sciences Würzburg-Schweinfurt"
+  - family-names: Vogelsang
+    given-names: Andreas
+    orcid: "https://orcid.org/0000-0003-1041-0815"
+    affiliation: "University of Duisburg-Essen"
+  - family-names: Franch
+    given-names: Xavier
+    orcid: "https://orcid.org/0000-0001-9733-8830"
+    affiliation: "Universitat Politècnica de Catalunya"
+  - family-names: Herrmann
+    given-names: Andrea
+    orcid: "https://orcid.org/0000-0002-4234-8422"
+    affiliation: "Herrmann & Ehrlich"
+  - family-names: Kopczyńska
+    given-names: Sylwia
+    orcid: "https://orcid.org/0000-0002-9550-3334"
+    affiliation: "Poznań University of Technology"
+  - family-names: Rachmann
+    given-names: Alexander
+    orcid: "https://orcid.org/0000-0001-8217-7149"
+    affiliation: "CBS University of Applied Sciences"
+preferred-citation:
+  type: conference-paper
+  title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+  authors:
+    - family-names: Hess
+      given-names: Anne
+    - family-names: Vogelsang
+      given-names: Andreas
+    - family-names: Franch
+      given-names: Xavier
+    - family-names: Herrmann
+      given-names: Andrea
+    - family-names: Kopczyńska
+      given-names: Sylwia
+    - family-names: Rachmann
+      given-names: Alexander
+  conference:
+    name: "REFSQ 2026"
+references:
+  - type: dataset
+    title: "Artifact - Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+    doi: "10.5281/zenodo.18207273"
+    notes: "Round-1 dataset (data/round1/ and codebook/round1/ in this repository are a copy of this deposit)."

@@ -1,0 +1,14 @@
+# Environments
+.venv/
+*.egg-info/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Paper PDF: publisher-copyrighted (REFSQ/Springer), not part of this
+# replication package. Cite via DOI in README.md instead.
+2026_REFSQ_AISurvey.pdf

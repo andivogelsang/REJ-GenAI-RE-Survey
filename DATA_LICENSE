@@ -1,0 +1,14 @@
+The contents of data/ and codebook/ (survey responses, questionnaire,
+free-text extracts, participant ID lists, and the qualitative coding
+schema) are licensed under the Creative Commons Attribution 4.0
+International License (CC-BY-4.0):
+
+    https://creativecommons.org/licenses/by/4.0/
+
+This matches the license of the round-1 dataset's own Zenodo deposit
+(Hess, A., Vogelsang, A., Franch, X., Herrmann, A., Kopczyńska, S., &
+Rachmann, A. (2026). Artifact - Opportunities and Limitations of GenAI in
+RE: Viewpoints from Practice. Zenodo. https://doi.org/10.5281/zenodo.18207273),
+of which data/round1/ and codebook/round1/ are a copy.
+
+Code under src/ and notebooks/ is licensed separately — see LICENSE.
