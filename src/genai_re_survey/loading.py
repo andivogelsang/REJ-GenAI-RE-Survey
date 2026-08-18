@@ -6,6 +6,10 @@ Both loaders return a DataFrame where:
   (schema.CORE_QUESTION_ALIASES)
 - LimeSurvey timing/group-time telemetry columns are dropped
   (schema.METADATA_COLUMN_PATTERNS)
+- rows with no substantive answers are dropped (_drop_empty_responses) —
+  LimeSurvey creates a response row as soon as someone opens the survey
+  link, so unstarted/abandoned visits show up in the export with every
+  question column empty
 - `df.attrs["round"]` is set, so downstream code (plotting, reports) knows
   which round a frame came from without it being threaded through every
   call explicitly.
@@ -30,6 +34,21 @@ def _drop_metadata_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df[keep]
 
 
+# LimeSurvey response-administration columns that exist for every response
+# row regardless of whether the respondent answered a single question —
+# not eligible to count as a "substantive" answer when checking for
+# no-content (never-started/abandoned) responses.
+_ADMIN_COLUMNS = {
+    "Response ID", "Date submitted", "Last page", "Start language",
+    "Seed", "Date started", "Date last action",
+}
+
+
+def _drop_empty_responses(df: pd.DataFrame) -> pd.DataFrame:
+    content_cols = [c for c in df.columns if c not in _ADMIN_COLUMNS]
+    return df[df[content_cols].notna().any(axis=1)].reset_index(drop=True)
+
+
 def _rename_bracket_labels(df: pd.DataFrame, aliases: dict[str, str]) -> pd.DataFrame:
     rename_map = {}
     for col in df.columns:
@@ -52,6 +71,7 @@ def _rename_core_questions(df: pd.DataFrame, round_key: str) -> pd.DataFrame:
 def load_round1(path: str | Path = _DEFAULT_ROUND1_PATH) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = _drop_metadata_columns(df)
+    df = _drop_empty_responses(df)
     df = _rename_bracket_labels(df, schema.LABEL_ALIASES)
     df = _rename_core_questions(df, "round1")
     df.attrs["round"] = "round1"
@@ -61,6 +81,7 @@ def load_round1(path: str | Path = _DEFAULT_ROUND1_PATH) -> pd.DataFrame:
 def load_round2(path: str | Path = _DEFAULT_ROUND2_PATH) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = _drop_metadata_columns(df)
+    df = _drop_empty_responses(df)
     df = _rename_core_questions(df, "round2")
     df.attrs["round"] = "round2"
     return df
