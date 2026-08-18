@@ -117,6 +117,10 @@ def _skills_comment_column(df: pd.DataFrame) -> str:
 # ---------------------------------------------------------------------------
 
 def _usage_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
+    # Index is the *clean* item name (no n baked in) — plotting.py aligns
+    # round1/round2 rows by this index, and round-specific n's differ, so
+    # embedding n here would make every item look round-unique and silently
+    # break the round-to-round pairing. n travels in its own column instead.
     cols = ["used_genai_for_re"] + [_usage_activity_column(df, a) for a in _ACTIVITY_BRACKETS]
     names = ["RE in General"] + _ACTIVITY_SHORT_NAMES
 
@@ -127,9 +131,9 @@ def _usage_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
         no_counts.append(vc.get('No', 0))
         n_counts.append(df[col].notna().sum())
 
-    plot_df = pd.DataFrame({'Yes': yes_counts, 'No': no_counts})
+    plot_df = pd.DataFrame({'Yes': yes_counts, 'No': no_counts}, index=names)
     plot_df_percentage = plot_df.apply(lambda x: x / x.sum() * 100 if x.sum() else x, axis=1)
-    plot_df_percentage.index = [f"{name} (n={n})" for name, n in zip(names, n_counts)]
+    plot_df_percentage['n'] = n_counts
     return plot_df_percentage
 
 
@@ -139,8 +143,12 @@ def _skills_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
     yes, no = vc.get('Yes', 0), vc.get('No', 0)
     n = df[col].notna().sum()
     total = yes + no
-    pct = {'Yes': [yes / total * 100 if total else 0], 'No': [no / total * 100 if total else 0]}
-    return pd.DataFrame(pct, index=[f"Skill set will change (n={n})"])
+    pct = {
+        'Yes': [yes / total * 100 if total else 0],
+        'No': [no / total * 100 if total else 0],
+        'n': [n],
+    }
+    return pd.DataFrame(pct, index=["Skill set will change"])
 
 
 def _application_domain_counts(df: pd.DataFrame) -> pd.Series:
@@ -148,6 +156,62 @@ def _application_domain_counts(df: pd.DataFrame) -> pd.Series:
     counts = df[cols].apply(lambda x: (x == 'Yes').sum())
     counts.index = [labels.label_from_brackets(c) for c in counts.index]
     return counts.sort_values(ascending=False)
+
+
+# Ordinal single-choice questions about the respondent's own GenAI usage
+# habits — collected and cross-round-aliased in schema.py, but general
+# demographic/context questions rather than RE-task-specific RQ1-4 content.
+FREQUENCY_LABELS = [
+    'Never used', 'Tried once', 'At least once a month',
+    'At least once a week', 'Daily', 'Other',
+]
+DURATION_LABELS = [
+    'No Experience at all', 'Less than 1 year', '1-2 years',
+    '3-4 years', 'More than 4 years',
+]
+
+
+def _categorical_percentage_df(df: pd.DataFrame, col: str, categories: list[str], row_label: str) -> pd.DataFrame:
+    s = df[col].dropna()
+    unexpected = set(s.unique()) - set(categories)
+    if unexpected:
+        raise ValueError(f"{col!r} has values outside `categories`: {sorted(unexpected)}")
+    n = len(s)
+    vc = s.value_counts()
+    counts = pd.Series({cat: vc.get(cat, 0) for cat in categories}, dtype=float)
+    pct = (counts / n * 100) if n else counts
+    result = pd.DataFrame([pct.to_numpy()], columns=categories, index=[row_label])
+    result['n'] = n
+    return result
+
+
+def _tool_usage_frequency_df(df: pd.DataFrame) -> pd.DataFrame:
+    return _categorical_percentage_df(
+        df, 'genai_tool_usage_frequency', FREQUENCY_LABELS, 'GenAI Tool Usage Frequency'
+    )
+
+
+def _experience_duration_df(df: pd.DataFrame) -> pd.DataFrame:
+    return _categorical_percentage_df(
+        df, 'genai_experience_duration', DURATION_LABELS, 'GenAI Experience Duration'
+    )
+
+
+# ---------------------------------------------------------------------------
+# Qualitative (free-text) comments
+# ---------------------------------------------------------------------------
+
+def _select_usage_comment_block(df: pd.DataFrame) -> pd.DataFrame:
+    cols = [c for c in df.columns if "did you use / apply GenAI" in c and _is_comment_column(c)]
+    return df[cols]
+
+
+def _select_training_interest_comment_block(df: pd.DataFrame) -> pd.DataFrame:
+    cols = [
+        c for c in df.columns
+        if "would you like to receive" in c and "training" in c and _is_comment_column(c)
+    ]
+    return df[cols]
 
 
 def _print_nonempty_comments(df: pd.DataFrame, columns: list[str], heading: str) -> None:
@@ -158,6 +222,29 @@ def _print_nonempty_comments(df: pd.DataFrame, columns: list[str], heading: str)
             print(f"\n--- {col} ---")
             for idx, val in non_empty.items():
                 print(f"{idx}: {val}")
+
+
+def print_qualitative_comments(df: pd.DataFrame, round_name: str) -> None:
+    """Print every non-empty free-text comment collected alongside the
+    quantitative Yes/No blocks (usage, training interest, skills). These
+    columns are deliberately excluded from the Yes/No charts (see
+    `_is_comment_column`) since they're prose, not categorical data — this
+    is where that prose actually gets read.
+    """
+    _print_nonempty_comments(
+        df, list(_select_usage_comment_block(df).columns),
+        f"=== {round_name}: GenAI usage — free-text comments ===",
+    )
+    print()
+    _print_nonempty_comments(
+        df, list(_select_training_interest_comment_block(df).columns),
+        f"=== {round_name}: Training interest — free-text comments ===",
+    )
+    print()
+    _print_nonempty_comments(
+        df, [_skills_comment_column(df)],
+        f"=== {round_name}: Skill set change — free-text comments ===",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -181,9 +268,27 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
     plt.savefig(outdir / "application_domains.pdf", bbox_inches="tight")
     plt.show()
 
+    # Demographics: GenAI usage frequency / experience duration
+    plotting.plot_stacked_percentage_barh(
+        [(round_name, _tool_usage_frequency_df(df))],
+        categories=FREQUENCY_LABELS,
+        colors=style.COLORS['frequency_purples'] + [style.COLORS['neutral_other']],
+        title="GenAI Tool Usage Frequency",
+        savepath=str(outdir / "genai_tool_usage_frequency.pdf"),
+    )
+    plotting.plot_stacked_percentage_barh(
+        [(round_name, _experience_duration_df(df))],
+        categories=DURATION_LABELS,
+        colors=style.COLORS['frequency_purples'],
+        title="GenAI Experience Duration",
+        savepath=str(outdir / "genai_experience_duration.pdf"),
+    )
+
     # RQ1: usage
-    plotting.plot_yesno_percentage_barh(
+    plotting.plot_stacked_percentage_barh(
         [(round_name, _usage_percentage_df(df))],
+        categories=['Yes', 'No'],
+        colors=[style.COLORS['yes'], style.COLORS['no']],
         title="GenAI Usage by RE Discipline",
         savepath=str(outdir / "usage.pdf"),
     )
@@ -215,8 +320,10 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         )
 
     # RQ4: skills + training
-    plotting.plot_yesno_percentage_barh(
+    plotting.plot_stacked_percentage_barh(
         [(round_name, _skills_percentage_df(df))],
+        categories=['Yes', 'No'],
+        colors=[style.COLORS['yes'], style.COLORS['no']],
         title="Skill Set Change",
         savepath=str(outdir / "skills.pdf"),
     )
@@ -235,6 +342,8 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         savepath=str(outdir / "training_format.pdf"),
     )
 
+    print_qualitative_comments(df, round_name)
+
 
 def generate_comparison_report(
     df1: pd.DataFrame,
@@ -249,8 +358,25 @@ def generate_comparison_report(
 
     rounds_of = lambda f: [(round1_label, f(df1)), (round2_label, f(df2))]
 
-    plotting.plot_yesno_percentage_barh(
+    plotting.plot_stacked_percentage_barh(
+        rounds_of(_tool_usage_frequency_df),
+        categories=FREQUENCY_LABELS,
+        colors=style.COLORS['frequency_purples'] + [style.COLORS['neutral_other']],
+        title="GenAI Tool Usage Frequency",
+        savepath=str(outdir / "genai_tool_usage_frequency_comparison.pdf"),
+    )
+    plotting.plot_stacked_percentage_barh(
+        rounds_of(_experience_duration_df),
+        categories=DURATION_LABELS,
+        colors=style.COLORS['frequency_purples'],
+        title="GenAI Experience Duration",
+        savepath=str(outdir / "genai_experience_duration_comparison.pdf"),
+    )
+
+    plotting.plot_stacked_percentage_barh(
         rounds_of(_usage_percentage_df),
+        categories=['Yes', 'No'],
+        colors=[style.COLORS['yes'], style.COLORS['no']],
         title="GenAI Usage by RE Discipline",
         savepath=str(outdir / "usage_comparison.pdf"),
     )
@@ -275,8 +401,10 @@ def generate_comparison_report(
             savepath=str(outdir / f"{phase_key}_assessment_comparison.pdf"),
             show_legend=False,
         )
-    plotting.plot_yesno_percentage_barh(
+    plotting.plot_stacked_percentage_barh(
         rounds_of(_skills_percentage_df),
+        categories=['Yes', 'No'],
+        colors=[style.COLORS['yes'], style.COLORS['no']],
         title="Skill Set Change",
         savepath=str(outdir / "skills_comparison.pdf"),
     )

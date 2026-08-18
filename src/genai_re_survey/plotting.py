@@ -65,31 +65,42 @@ def _round_style(round_label: str, n_rounds: int) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Yes/No percentage (stacked horizontal bar)
+# Categorical percentage (stacked horizontal bar) — Yes/No charts (usage,
+# skills) and ordinal single-choice charts (tool-usage frequency, GenAI
+# experience) all share this: one or more items, each a 100%-stacked bar
+# over a fixed, ordered set of categories.
+#
+# `rounds` dataframes must be indexed by a *category-free* item key (e.g.
+# "Elicitation", not "Elicitation (n=64)") — the multi-round path aligns
+# rounds on that index, so baking a round-specific n into it would make
+# every item look round-unique and silently break pairing. Per-item,
+# per-round n instead travels in a dedicated 'n' column and is rendered
+# into the tick label (single round) or combined into it per round
+# (comparison), so it never has to participate in alignment.
 # ---------------------------------------------------------------------------
 
-def _plot_yesno_percentage_barh_single(
-    plot_df_percentage: pd.DataFrame,   # index already set to labels with (n=…)
+def _plot_stacked_percentage_barh_single(
+    plot_df: pd.DataFrame,   # index = item key (no n); columns = categories + 'n'
+    categories: list[str],
+    colors: list[str],
     title: str,
-    savepath: str
+    xlabel: str,
+    savepath: str,
 ):
-    n_tasks = len(plot_df_percentage)
+    n_tasks = len(plot_df)
     fig_height = style.figure_height_for_rows(n_tasks)
     fig, ax = plt.subplots(figsize=(12, fig_height))
     y_pos = np.arange(n_tasks) * style.ROW_SPACING
 
-    categories = ['Yes', 'No']
-    cat_colors = [style.COLORS['yes'], style.COLORS['no']]
-
     left_vals = np.zeros(n_tasks)
-    for cat, color in zip(categories, cat_colors):
-        vals = plot_df_percentage[cat].to_numpy()
+    for cat, color in zip(categories, colors):
+        vals = plot_df[cat].to_numpy()
         ax.barh(y_pos, vals, left=left_vals, color=color,
                 height=style.BAR_HEIGHT, edgecolor='black', linewidth=0.8, label=cat)
         left_vals += vals
 
     # In-bar labels (percent, no decimals)
-    for i, row in enumerate(plot_df_percentage[categories].to_numpy()):
+    for i, row in enumerate(plot_df[categories].to_numpy()):
         x_left = 0.0
         for width_val in row:
             if width_val > 0:
@@ -97,9 +108,10 @@ def _plot_yesno_percentage_barh_single(
                         ha='center', va='center', fontsize=14, color='white')
                 x_left += width_val
 
+    y_labels = [f"{item} (n={int(n)})" for item, n in zip(plot_df.index, plot_df['n'])]
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(plot_df_percentage.index)
-    ax.set_xlabel('Percentage of Respondents')
+    ax.set_yticklabels(y_labels)
+    ax.set_xlabel(xlabel)
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
     ax.set_title(title)
@@ -109,7 +121,7 @@ def _plot_yesno_percentage_barh_single(
     ax.legend(
         loc='lower center',
         bbox_to_anchor=(0.5, 1.10),
-        ncol=2,
+        ncol=min(len(categories), 3),
         frameon=False,
         title=None
     )
@@ -119,18 +131,19 @@ def _plot_yesno_percentage_barh_single(
     plt.show()
 
 
-def plot_yesno_percentage_barh(
+def plot_stacked_percentage_barh(
     rounds: list[tuple[str, pd.DataFrame]],
+    categories: list[str],
+    colors: list[str],
     title: str,
     savepath: str,
+    xlabel: str = 'Percentage of Respondents',
 ):
     if len(rounds) == 1:
         _, df = rounds[0]
-        return _plot_yesno_percentage_barh_single(df, title, savepath)
+        return _plot_stacked_percentage_barh_single(df, categories, colors, title, xlabel, savepath)
 
     n_rounds = len(rounds)
-    categories = ['Yes', 'No']
-    cat_colors = [style.COLORS['yes'], style.COLORS['no']]
 
     item_order = list(rounds[0][1].index)
     for _, df in rounds[1:]:
@@ -143,22 +156,29 @@ def plot_yesno_percentage_barh(
     bar_height, offsets = _round_offsets(n_rounds, style.BAR_HEIGHT)
 
     round_handles = []
+    n_by_item = {item: {} for item in item_order}
     for r_idx, (round_label, df) in enumerate(rounds):
-        df = df.reindex(item_order).fillna(0.0)
+        df = df.reindex(item_order)
         y_pos = base_y + offsets[r_idx]
         rstyle = _round_style(round_label, n_rounds)
         left_vals = np.zeros(n_tasks)
-        for cat, color in zip(categories, cat_colors):
-            vals = df[cat].to_numpy()
+        for cat, color in zip(categories, colors):
+            vals = df[cat].fillna(0.0).to_numpy()
             ax.barh(y_pos, vals, left=left_vals, color=color,
                     height=bar_height, linewidth=0.8,
                     label=(cat if r_idx == 0 else None), **rstyle)
             left_vals += vals
         round_handles.append(Patch(facecolor='0.6', label=round_label, **rstyle))
+        for item, n in zip(item_order, df['n']):
+            n_by_item[item][round_label] = 0 if pd.isna(n) else int(n)
 
+    y_labels = [
+        f"{item} (" + ", ".join(f"{rl} n={n_by_item[item].get(rl, 0)}" for rl, _ in rounds) + ")"
+        for item in item_order
+    ]
     ax.set_yticks(base_y)
-    ax.set_yticklabels(item_order)
-    ax.set_xlabel('Percentage of Respondents')
+    ax.set_yticklabels(y_labels)
+    ax.set_xlabel(xlabel)
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
     ax.set_title(title)
@@ -173,7 +193,7 @@ def plot_yesno_percentage_barh(
         handles, legend_labels,
         loc='lower center',
         bbox_to_anchor=(0.5, 1.10),
-        ncol=2,
+        ncol=min(len(categories) + n_rounds, 4),
         frameon=False,
         title=None
     )
@@ -184,10 +204,10 @@ def plot_yesno_percentage_barh(
 
 
 # ---------------------------------------------------------------------------
-# "Number of Yes" horizontal bar (prevention / threats / training charts).
-# Single-round: raw counts (kept byte-identical to the original figures).
-# Multi-round comparison: percentage of that round's respondents, since
-# round 1 and round 2 have different total participant counts.
+# "Percentage of Yes" horizontal bar (prevention / threats / training
+# charts). Both single-round and multi-round comparison show percentage of
+# that round's respondents (with n given alongside), so single-round and
+# comparison figures for the same block read on the same axis.
 # ---------------------------------------------------------------------------
 
 def _count_column(s: pd.Series) -> int:
@@ -211,6 +231,7 @@ def _plot_yes_counts_barh_single(
 
     # Global respondent count (at least one non-null across all columns)
     n_responses = df.dropna(how="all").shape[0]
+    pct = (counts / n_responses * 100) if n_responses else counts.astype(float)
 
     labels_ = [label_func(col) for col in counts.index]
 
@@ -223,7 +244,7 @@ def _plot_yes_counts_barh_single(
 
     ax.barh(
         y=y_pos,
-        width=counts.values,
+        width=pct.values,
         height=style.BAR_HEIGHT,
         color="white",
         edgecolor="black",
@@ -232,7 +253,9 @@ def _plot_yes_counts_barh_single(
 
     ax.set_yticks(y_pos)
     ax.set_yticklabels(labels_)
-    ax.set_xlabel(f'Number of Respondents (n={n_responses})')
+    ax.set_xlabel(f'Percentage of Respondents (n={n_responses})')
+    ax.set_xlim(0, 100)
+    ax.set_xticks(np.arange(0, 101, 20))
     ax.set_ylabel(ylabel)
     ax.set_title(title)
 
@@ -374,15 +397,22 @@ def _plot_diverging_usefulness_harmfulness_single(
         )
         pos_cum += vals
 
-    # Per-item valid counts (exclude "I don't know"), unified label format
-    relevant_cols = [c for c in df.columns if (scale1_key in c or scale2_key in c)]
-    valid_counts = {}
-    for c in relevant_cols:
-        task = labels.extract_task_name(c)
-        s = df[c]
-        valid_counts[task] = s[~s.isin([exclude_value])].notna().sum()
+    # Per-item valid counts (exclude "I don't know"). Usefulness and
+    # harmfulness are separate questions per task and are answered by
+    # different numbers of respondents, so each gets its own n.
+    def _valid_counts(cols: list[str]) -> dict[str, int]:
+        return {
+            labels.extract_task_name(c): int(df[c][~df[c].isin([exclude_value])].notna().sum())
+            for c in cols
+        }
 
-    y_labels = [f"{task} (n={valid_counts.get(task, 0)})" for task in use_df.index]
+    use_valid_counts = _valid_counts(use_cols)
+    harm_valid_counts = _valid_counts(harm_cols)
+
+    y_labels = [
+        f"{task} (use n={use_valid_counts.get(task, 0)}, harm n={harm_valid_counts.get(task, 0)})"
+        for task in use_df.index
+    ]
     ax.set_yticks(y_pos)
     ax.set_yticklabels(y_labels)
 
@@ -451,7 +481,7 @@ def plot_diverging_usefulness_harmfulness(
     hatch_use = "///"
     hatch_harm = "..."
 
-    per_round = []  # (round_label, use_df, harm_df)
+    per_round = []  # (round_label, use_df, harm_df, use_valid_counts, harm_valid_counts)
     for round_label, df in rounds:
         use_cols = [c for c in df.columns if scale1_key in c]
         harm_cols = [c for c in df.columns if scale2_key in c]
@@ -460,14 +490,24 @@ def plot_diverging_usefulness_harmfulness(
         use_df = pd.DataFrame(use_data).T
         harm_df = pd.DataFrame(harm_data).T
         common = use_df.index.intersection(harm_df.index)
-        per_round.append((round_label, use_df.loc[common], harm_df.loc[common]))
+
+        def _valid_counts(cols: list[str], df=df) -> dict[str, int]:
+            return {
+                labels.extract_task_name(c): int(df[c][~df[c].isin([exclude_value])].notna().sum())
+                for c in cols
+            }
+
+        per_round.append((
+            round_label, use_df.loc[common], harm_df.loc[common],
+            _valid_counts(use_cols), _valid_counts(harm_cols),
+        ))
 
     # Task order: anchor round's usefulness share, then any later-round-only
     # tasks appended (sorted by their own usefulness share).
-    _, anchor_use, _ = per_round[0]
+    _, anchor_use, _, _, _ = per_round[0]
     anchor_share = anchor_use[['Extremely useful', 'Very useful']].sum(axis=1)
     task_order = list(anchor_share.sort_values(ascending=False).index)
-    for _, use_df, _ in per_round[1:]:
+    for _, use_df, _, _, _ in per_round[1:]:
         extra = [t for t in use_df.index if t not in task_order]
         if extra:
             extra_share = use_df.loc[extra, ['Extremely useful', 'Very useful']].sum(axis=1)
@@ -481,7 +521,7 @@ def plot_diverging_usefulness_harmfulness(
     bar_height, offsets = _round_offsets(n_rounds, style.BAR_HEIGHT)
 
     round_handles = []
-    for r_idx, (round_label, use_df, harm_df) in enumerate(per_round):
+    for r_idx, (round_label, use_df, harm_df, _, _) in enumerate(per_round):
         use_df = use_df.reindex(task_order).fillna(0.0)
         harm_df = harm_df.reindex(task_order).fillna(0.0)
         y_pos = base_y + offsets[r_idx]
@@ -503,8 +543,15 @@ def plot_diverging_usefulness_harmfulness(
 
         round_handles.append(Patch(facecolor='0.8', label=round_label, **rstyle))
 
+    y_labels = [
+        f"{task} (" + "; ".join(
+            f"{round_label}: use n={use_valid.get(task, 0)}, harm n={harm_valid.get(task, 0)}"
+            for round_label, _, _, use_valid, harm_valid in per_round
+        ) + ")"
+        for task in task_order
+    ]
     ax.set_yticks(base_y)
-    ax.set_yticklabels(task_order)
+    ax.set_yticklabels(y_labels)
 
     ax.set_xlabel('Percentage of Respondents')
     ax.axvline(0, linewidth=1.2, color='black')

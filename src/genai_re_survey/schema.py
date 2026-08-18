@@ -80,14 +80,17 @@ def _core_questions(columns) -> set[str]:
 
 
 def diff_schemas(df1: pd.DataFrame, df2: pd.DataFrame) -> dict:
-    """Report the raw round1-vs-round2 column differences.
+    """Report round1-vs-round2 column differences, post-normalization.
 
-    Compares columns *before* schema.py's aliasing is applied (pass the
-    output of loading's internal raw readers, not the public load_round1 /
-    load_round2, to see what the aliasing is correcting for). After
-    aliasing, round1-only / round2-only should be empty except for genuinely
-    round-specific questions (e.g. round 2's new "previous survey" /
-    "which GenAI tools" questions).
+    Both call sites (loading's `03_comparison.ipynb` and
+    `reports.generate_comparison_report`) pass the already-normalized
+    output of the public `load_round1()` / `load_round2()` — i.e. this
+    checks that schema.py's aliasing actually closed the gap, not what raw
+    difference it's correcting for. round1-only / round2-only should come
+    back empty except for genuinely round-specific questions (e.g. round 2's
+    new "previous survey" / "which GenAI tools" questions). To see the raw,
+    pre-alias differences instead, call this on `pd.read_csv(path)` output
+    directly.
     """
     b1, b2 = _bracket_labels(df1.columns), _bracket_labels(df2.columns)
     c1, c2 = _core_questions(df1.columns), _core_questions(df2.columns)

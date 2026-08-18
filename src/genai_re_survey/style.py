@@ -52,6 +52,13 @@ COLORS = {
     "use_blues": ["#DCEBFA", "#B9D7F4", "#86B9E8", "#4E97D9", "#1F6FB5"],
     # Harmfulness: oranges (light -> dark)
     "harm_oranges": ["#FBE6C5", "#F6C98A", "#F0A34F", "#E07A1F", "#B85A0A"],
+
+    # Ordered scale (low -> high) for GenAI usage-frequency / experience-
+    # duration charts. Distinct hue from use_blues/harm_oranges so it isn't
+    # mistaken for the usefulness/harmfulness encoding.
+    "frequency_purples": ["#F2F0F7", "#CBC9E2", "#9E9AC8", "#756BB1", "#54278F"],
+    # Catch-all category (e.g. tool-usage frequency's free-text "Other").
+    "neutral_other": "#999999",
 }
 
 # Round-distinguishing styling for grouped/paired bars (comparison plots).
