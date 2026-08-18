@@ -184,7 +184,10 @@ def plot_yesno_percentage_barh(
 
 
 # ---------------------------------------------------------------------------
-# "Number of Yes" horizontal bar (prevention / threats / training charts)
+# "Number of Yes" horizontal bar (prevention / threats / training charts).
+# Single-round: raw counts (kept byte-identical to the original figures).
+# Multi-round comparison: percentage of that round's respondents, since
+# round 1 and round 2 have different total participant counts.
 # ---------------------------------------------------------------------------
 
 def _count_column(s: pd.Series) -> int:
@@ -251,12 +254,18 @@ def plot_yes_counts_barh(
         _, df = rounds[0]
         return _plot_yes_counts_barh_single(df, title, ylabel, label_func, savepath)
 
+    # Rounds differ in total respondents (e.g. round 1 n=150 vs round 2
+    # n=79), so raw "yes" counts aren't comparable side by side — convert
+    # each round to a percentage of that round's own respondent count.
     n_rounds = len(rounds)
-    per_round = []  # (round_label, {item_label: count}, n_responses)
+    per_round = []  # (round_label, {item_label: pct_of_round}, n_responses)
     for round_label, df in rounds:
         raw_counts = df.apply(_count_column)
         n_responses = df.dropna(how="all").shape[0]
-        by_label = {label_func(col): int(v) for col, v in raw_counts.items()}
+        by_label = {
+            label_func(col): (float(v) / n_responses * 100 if n_responses else 0.0)
+            for col, v in raw_counts.items()
+        }
         per_round.append((round_label, by_label, n_responses))
 
     anchor_label, anchor_counts, _ = per_round[0]
@@ -274,7 +283,7 @@ def plot_yes_counts_barh(
 
     round_handles = []
     for r_idx, (round_label, counts, n_responses) in enumerate(per_round):
-        values = np.array([counts.get(item, 0) for item in item_order])
+        values = np.array([counts.get(item, 0.0) for item in item_order])
         y_pos = base_y + offsets[r_idx]
         rstyle = _round_style(round_label, n_rounds)
         ax.barh(y=y_pos, width=values, height=bar_height, color="white",
@@ -283,7 +292,9 @@ def plot_yes_counts_barh(
 
     ax.set_yticks(base_y)
     ax.set_yticklabels(item_order)
-    ax.set_xlabel('Number of Respondents')
+    ax.set_xlabel('Percentage of Respondents')
+    ax.set_xlim(0, 100)
+    ax.set_xticks(np.arange(0, 101, 20))
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     ax.legend(handles=round_handles, loc='lower center',
