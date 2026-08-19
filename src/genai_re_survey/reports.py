@@ -533,16 +533,27 @@ def compare_round_significance(df1: pd.DataFrame, df2: pd.DataFrame) -> dict[str
         labels.label_strip_brackets_and_parens,
     ))
 
+    # Training-interest and training-format each have their own unrelated
+    # free-text "Other" write-in item; both reduce to the bare label "Other"
+    # under labels.label_from_brackets, so without a prefix they'd collide
+    # into a single, ambiguous "Other" row in this shared family. Prefixed
+    # here; generate_comparison_report strips the prefix back off per-chart
+    # via _significant_with_prefix_stripped (same pattern used for the
+    # "Demographics: Experience (ordinal)" family's RE-discipline items).
     rq4_items = (
         [("Skill set will change", df1[_skills_value_column(df1)], df2[_skills_value_column(df2)])]
-        + _matched_items(
-            df1, list(_select_training_interest_block(df1).columns),
-            df2, list(_select_training_interest_block(df2).columns), labels.label_from_brackets,
-        )
-        + _matched_items(
-            df1, list(_select_training_format_block(df1).columns),
-            df2, list(_select_training_format_block(df2).columns), labels.label_from_brackets,
-        )
+        + [
+            (f"Training interest: {label}", s1, s2) for label, s1, s2 in _matched_items(
+                df1, list(_select_training_interest_block(df1).columns),
+                df2, list(_select_training_interest_block(df2).columns), labels.label_from_brackets,
+            )
+        ]
+        + [
+            (f"Training format: {label}", s1, s2) for label, s1, s2 in _matched_items(
+                df1, list(_select_training_format_block(df1).columns),
+                df2, list(_select_training_format_block(df2).columns), labels.label_from_brackets,
+            )
+        ]
     )
     results['RQ4: Skills + training'] = stats.compare_categorical_family(rq4_items)
 
@@ -645,9 +656,12 @@ def _significant_set(result_df: pd.DataFrame, alpha: float = 0.05) -> set[str]:
 
 
 def _significant_subset(result_df: pd.DataFrame, allowed_items: set[str], alpha: float = 0.05) -> set[str]:
-    """For a family combining several charts' items (e.g. RQ4's skill +
-    training-interest + training-format), keep only the significant items
-    that belong to one specific chart.
+    """For a family combining several charts' items under unprefixed, unique
+    labels (e.g. RQ4's "Skill set will change"), keep only the significant
+    items that belong to one specific chart. For prefixed items sharing a
+    family (e.g. RQ4's training-interest/training-format sub-blocks, which
+    can each have their own "Other" — see _significant_with_prefix_stripped),
+    match by prefix instead.
     """
     return _significant_set(result_df, alpha) & allowed_items
 
@@ -943,8 +957,6 @@ def generate_comparison_report(
         )
 
     rq4_family = significance['RQ4: Skills + training']
-    training_interest_labels = {labels.label_from_brackets(c) for c in _select_training_interest_block(df1).columns}
-    training_format_labels = {labels.label_from_brackets(c) for c in _select_training_format_block(df1).columns}
     plotting.plot_stacked_percentage_barh(
         rounds_of(_skills_percentage_df),
         categories=['Yes', 'No'],
@@ -959,7 +971,7 @@ def generate_comparison_report(
         ylabel="Training Interest",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_interest_comparison.pdf"),
-        significant_items=_significant_subset(rq4_family, training_interest_labels),
+        significant_items=_significant_with_prefix_stripped(rq4_family, "Training interest: "),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_training_format_block),
@@ -967,7 +979,7 @@ def generate_comparison_report(
         ylabel="Training Format",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_format_comparison.pdf"),
-        significant_items=_significant_subset(rq4_family, training_format_labels),
+        significant_items=_significant_with_prefix_stripped(rq4_family, "Training format: "),
     )
 
     print_significance_summary(significance)

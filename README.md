@@ -53,9 +53,26 @@ around `genai_re_survey.reports`:
   2026 paper (`figures/round1/`).
 - `02_round2_analysis.ipynb` runs the same analysis against round 2
   (`figures/round2/`).
-- `03_comparison.ipynb` renders round-1-vs-round-2 paired/grouped figures
-  and prints a schema diff flagging anything unique to either round
-  (`figures/comparison/`).
+- `03_comparison.ipynb` renders round-1-vs-round-2 paired/grouped figures,
+  tests every family of paired items for a significant round-to-round
+  difference, and prints a schema diff flagging anything unique to either
+  round (`figures/comparison/`).
+
+### Significance testing
+
+`03_comparison.ipynb` also runs round-1-vs-round-2 significance testing via
+`genai_re_survey.stats`/`genai_re_survey.reports.compare_round_significance`:
+Fisher's exact test for Yes/No items (robust to the small/zero cell counts
+common at these sample sizes, unlike chi-square), Mann-Whitney U for ordinal
+items (5-point Likert usefulness/harmfulness ratings, experience-level
+scales), and Benjamini-Hochberg FDR correction applied *within* each family
+of related items (e.g. all prevention reasons together), not once globally.
+See `src/genai_re_survey/stats.py`'s module docstring for the full method.
+
+Significant items (q < 0.05) are marked bold with a trailing `*` directly on
+the comparison charts; every test's full numbers — n, effect size
+(odds ratio or rank-biserial r), p, and q — are written to
+`figures/comparison/significance_tests.csv`.
 
 ## Citation
 

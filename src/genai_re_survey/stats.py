@@ -28,15 +28,27 @@ def benjamini_hochberg(p_values: pd.Series) -> pd.Series:
 
     q_(i) = min over j>=i of (p_(j) * m / j), applied to p-values sorted
     ascending, then mapped back to the original order and clipped to [0, 1].
+
+    An item can have an undefined p-value (NaN — e.g. a Mann-Whitney test
+    with zero observations on one side of a family with 0 respondents for
+    that specific item). Such items get q=NaN and are excluded from `m` (the
+    family size used to correct everyone else) rather than being sorted in:
+    NaN sorts as "largest" under `np.argsort`, and `np.minimum.accumulate`
+    over a NaN propagates it to every earlier (smaller-p) entry too, silently
+    turning one untestable item into "nothing in this family is significant".
     """
     p = np.asarray(p_values, dtype=float)
-    m = len(p)
-    order = np.argsort(p)
-    ranked = p[order] * m / np.arange(1, m + 1)
-    # enforce monotonicity from the largest p-value down
-    q_sorted = np.minimum.accumulate(ranked[::-1])[::-1]
-    q = np.empty(m)
-    q[order] = np.clip(q_sorted, 0, 1)
+    q = np.full(p.shape, np.nan)
+    valid = ~np.isnan(p)
+    m = int(valid.sum())
+    if m > 0:
+        valid_p = p[valid]
+        order = np.argsort(valid_p)
+        ranked = valid_p[order] * m / np.arange(1, m + 1)
+        q_sorted = np.minimum.accumulate(ranked[::-1])[::-1]
+        q_valid = np.empty(m)
+        q_valid[order] = np.clip(q_sorted, 0, 1)
+        q[valid] = q_valid
     return pd.Series(q, index=p_values.index if isinstance(p_values, pd.Series) else None)
 
 
@@ -73,11 +85,18 @@ def mannwhitney_test(
     s1: pd.Series, s2: pd.Series, category_order: list[str], exclude_value: str = "I don't know"
 ) -> dict:
     """One ordinal item, round1 vs round2. category_order must be ascending
-    low->high; values outside it (besides exclude_value) are an input error.
+    low->high. Raises ValueError if either series has a value outside
+    category_order plus exclude_value (matches reports._categorical_percentage_df's
+    behavior for the same situation — fail loudly on an unexpected category
+    rather than silently mapping it to NaN and corrupting the U statistic).
     """
     rank = {cat: i for i, cat in enumerate(category_order)}
-    x1 = s1[~s1.isin([exclude_value])].dropna().map(rank)
-    x2 = s2[~s2.isin([exclude_value])].dropna().map(rank)
+    x1_raw = s1[~s1.isin([exclude_value])].dropna()
+    x2_raw = s2[~s2.isin([exclude_value])].dropna()
+    unexpected = (set(x1_raw.unique()) | set(x2_raw.unique())) - set(category_order)
+    if unexpected:
+        raise ValueError(f"values outside `category_order`: {sorted(unexpected)}")
+    x1, x2 = x1_raw.map(rank), x2_raw.map(rank)
     n1, n2 = len(x1), len(x2)
     if n1 == 0 or n2 == 0:
         return {'n1': n1, 'n2': n2, 'effect_size': float('nan'), 'effect_label': 'rank_biserial_r', 'p': float('nan')}

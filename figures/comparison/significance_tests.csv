@@ -35,23 +35,23 @@ RQ2: Perceived threats,Hallucinations,60,42,29.0,21.0,48.333333333333336,50.0,0.
 RQ2: Perceived threats,I don't see any limitations / threats,60,42,0.0,0.0,0.0,0.0,,odds_ratio,1.0,1.0,False
 RQ2: Perceived threats,Other,2,1,2.0,1.0,100.0,100.0,,odds_ratio,1.0,1.0,False
 RQ4: Skills + training,Skill set will change,60,41,54.0,34.0,90.0,82.92682926829268,1.8529411764705883,odds_ratio,0.3688183595412967,1.0,False
-RQ4: Skills + training,Conferences,60,41,7.0,8.0,11.666666666666666,19.51219512195122,0.5448113207547169,odds_ratio,0.3933505154887788,1.0,False
-RQ4: Skills + training,Case study analysis and group discussions,60,41,13.0,11.0,21.666666666666668,26.82926829268293,0.7543520309477756,odds_ratio,0.6360646622535648,1.0,False
-RQ4: Skills + training,Blended learning programs,60,41,4.0,4.0,6.666666666666667,9.75609756097561,0.6607142857142857,odds_ratio,0.7119197069959242,1.0,False
-RQ4: Skills + training,Mentoring programs,60,41,7.0,8.0,11.666666666666666,19.51219512195122,0.5448113207547169,odds_ratio,0.3933505154887788,1.0,False
-RQ4: Skills + training,Online courses and webinars,60,41,34.0,19.0,56.666666666666664,46.34146341463415,1.51417004048583,odds_ratio,0.31960511759995375,1.0,False
-RQ4: Skills + training,"Workshops, tutorials and hands-on labs",60,41,29.0,21.0,48.333333333333336,51.21951219512195,0.890937019969278,odds_ratio,0.8407021227898821,1.0,False
-RQ4: Skills + training,Newsletter,60,41,5.0,2.0,8.333333333333332,4.878048780487805,1.7727272727272727,odds_ratio,0.6977729068930454,1.0,False
-RQ4: Skills + training,Community of practice,60,41,14.0,9.0,23.333333333333332,21.951219512195124,1.0821256038647342,odds_ratio,1.0,1.0,False
-RQ4: Skills + training,"“Classical Training” (e.g., Classroom Training, Face-2-Face Training)",60,41,20.0,17.0,33.33333333333333,41.46341463414634,0.7058823529411765,odds_ratio,0.5284697394133534,1.0,False
-RQ4: Skills + training,Other,3,0,3.0,0.0,100.0,0.0,,odds_ratio,1.0,1.0,False
-RQ4: Skills + training,AI-supported Requirements Management,60,41,18.0,18.0,30.0,43.90243902439025,0.5476190476190477,odds_ratio,0.20445401721527046,1.0,False
-RQ4: Skills + training,AI-supported Requirements Validation / Quality Assurance,60,41,24.0,15.0,40.0,36.58536585365854,1.1555555555555554,odds_ratio,0.8358414065745172,1.0,False
-RQ4: Skills + training,AI-supported Requirements Specification / Requirements Modeling,60,41,28.0,19.0,46.666666666666664,46.34146341463415,1.013157894736842,odds_ratio,1.0,1.0,False
-RQ4: Skills + training,AI-supported Requirements Analysis and Negotiation,60,41,18.0,12.0,30.0,29.268292682926827,1.0357142857142858,odds_ratio,1.0,1.0,False
-RQ4: Skills + training,AI-supported Requirements Elicitation,60,41,25.0,16.0,41.66666666666667,39.02439024390244,1.1160714285714286,odds_ratio,0.8386133839429951,1.0,False
-RQ4: Skills + training,Hackathons,60,41,8.0,2.0,13.333333333333334,4.878048780487805,3.0,odds_ratio,0.1946731570658332,1.0,False
-RQ4: Skills + training,Other,1,2,1.0,2.0,100.0,100.0,,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,Training format: Conferences,60,41,7.0,8.0,11.666666666666666,19.51219512195122,0.5448113207547169,odds_ratio,0.3933505154887788,1.0,False
+RQ4: Skills + training,Training format: Case study analysis and group discussions,60,41,13.0,11.0,21.666666666666668,26.82926829268293,0.7543520309477756,odds_ratio,0.6360646622535648,1.0,False
+RQ4: Skills + training,Training format: Blended learning programs,60,41,4.0,4.0,6.666666666666667,9.75609756097561,0.6607142857142857,odds_ratio,0.7119197069959242,1.0,False
+RQ4: Skills + training,Training format: Mentoring programs,60,41,7.0,8.0,11.666666666666666,19.51219512195122,0.5448113207547169,odds_ratio,0.3933505154887788,1.0,False
+RQ4: Skills + training,Training format: Online courses and webinars,60,41,34.0,19.0,56.666666666666664,46.34146341463415,1.51417004048583,odds_ratio,0.31960511759995375,1.0,False
+RQ4: Skills + training,"Training format: Workshops, tutorials and hands-on labs",60,41,29.0,21.0,48.333333333333336,51.21951219512195,0.890937019969278,odds_ratio,0.8407021227898821,1.0,False
+RQ4: Skills + training,Training format: Newsletter,60,41,5.0,2.0,8.333333333333332,4.878048780487805,1.7727272727272727,odds_ratio,0.6977729068930454,1.0,False
+RQ4: Skills + training,Training format: Community of practice,60,41,14.0,9.0,23.333333333333332,21.951219512195124,1.0821256038647342,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,"Training format: “Classical Training” (e.g., Classroom Training, Face-2-Face Training)",60,41,20.0,17.0,33.33333333333333,41.46341463414634,0.7058823529411765,odds_ratio,0.5284697394133534,1.0,False
+RQ4: Skills + training,Training interest: Other,3,0,3.0,0.0,100.0,0.0,,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,Training interest: AI-supported Requirements Management,60,41,18.0,18.0,30.0,43.90243902439025,0.5476190476190477,odds_ratio,0.20445401721527046,1.0,False
+RQ4: Skills + training,Training interest: AI-supported Requirements Validation / Quality Assurance,60,41,24.0,15.0,40.0,36.58536585365854,1.1555555555555554,odds_ratio,0.8358414065745172,1.0,False
+RQ4: Skills + training,Training interest: AI-supported Requirements Specification / Requirements Modeling,60,41,28.0,19.0,46.666666666666664,46.34146341463415,1.013157894736842,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,Training interest: AI-supported Requirements Analysis and Negotiation,60,41,18.0,12.0,30.0,29.268292682926827,1.0357142857142858,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,Training interest: AI-supported Requirements Elicitation,60,41,25.0,16.0,41.66666666666667,39.02439024390244,1.1160714285714286,odds_ratio,0.8386133839429951,1.0,False
+RQ4: Skills + training,Training format: Hackathons,60,41,8.0,2.0,13.333333333333334,4.878048780487805,3.0,odds_ratio,0.1946731570658332,1.0,False
+RQ4: Skills + training,Training format: Other,1,2,1.0,2.0,100.0,100.0,,odds_ratio,1.0,1.0,False
 Demographics: Role / position,Business Analyst,109,69,33.0,23.0,30.275229357798167,33.33333333333333,0.868421052631579,odds_ratio,0.740988925498886,0.9482136561540455,False
 Demographics: Role / position,Product Owner,109,69,19.0,13.0,17.431192660550458,18.84057971014493,0.9094017094017094,odds_ratio,0.8428565832480405,0.9482136561540455,False
 Demographics: Role / position,Requirements Engineer,109,69,57.0,34.0,52.293577981651374,49.275362318840585,1.128393665158371,odds_ratio,0.7589359763055465,0.9482136561540455,False

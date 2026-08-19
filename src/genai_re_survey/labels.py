@@ -27,4 +27,5 @@ def label_strip_brackets_and_parens(col: str) -> str:
 def extract_task_name(col: str) -> str:
     m = re.search(r'\[(.*?)\]', col)
     task = m.group(1) if m else col
-    return re.sub(r'\(.*?\)', '', task).strip()
+    task = re.sub(r'\(.*?\)', '', task).strip()
+    return clean_label(task)
