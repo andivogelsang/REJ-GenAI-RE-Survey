@@ -65,6 +65,43 @@ def _round_style(round_label: str, n_rounds: int) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Significance markers — shared by every comparison (multi-round) chart.
+# `significant_items` is None when significance wasn't computed for a chart
+# (e.g. single-round reports, or a family reports.py doesn't test); passing
+# an explicit (possibly empty) set marks the chart as "tested" and shows the
+# caption regardless of whether anything reached significance.
+# ---------------------------------------------------------------------------
+
+_SIGNIFICANCE_CAPTION = '* significant difference vs. the other round (q < 0.05, FDR-corrected within family)'
+
+
+def _mark_significant(label: str, item: str, significant_items: set[str] | None) -> str:
+    if significant_items is not None and item in significant_items:
+        return f"{label} *"
+    return label
+
+
+def _finalize_significance_marks(ax, item_order: list[str], significant_items: set[str] | None) -> None:
+    """Bold the y-tick labels already suffixed via `_mark_significant`, and
+    add a caption explaining the convention. No-op if significance wasn't
+    computed for this chart.
+
+    The caption is appended to the xlabel (as a second line) rather than
+    placed as a floating `ax.text` annotation below the axes — a floating
+    annotation's position is in axes-fraction coordinates and isn't reliably
+    accounted for by `tight_layout`/`bbox_inches="tight"`, so it tended to
+    collide with the xlabel itself. A multi-line xlabel is laid out and
+    measured by matplotlib like any other label, so it can't overlap.
+    """
+    if significant_items is None:
+        return
+    for text, item in zip(ax.get_yticklabels(), item_order):
+        if item in significant_items:
+            text.set_fontweight('bold')
+    ax.set_xlabel(f"{ax.get_xlabel()}\n{_SIGNIFICANCE_CAPTION}")
+
+
+# ---------------------------------------------------------------------------
 # Categorical percentage (stacked horizontal bar) — Yes/No charts (usage,
 # skills) and ordinal single-choice charts (tool-usage frequency, GenAI
 # experience) all share this: one or more items, each a 100%-stacked bar
@@ -138,6 +175,7 @@ def plot_stacked_percentage_barh(
     title: str,
     savepath: str,
     xlabel: str = 'Percentage of Respondents',
+    significant_items: set[str] | None = None,
 ):
     if len(rounds) == 1:
         _, df = rounds[0]
@@ -173,7 +211,10 @@ def plot_stacked_percentage_barh(
             n_by_item[item][round_label] = 0 if pd.isna(n) else int(n)
 
     y_labels = [
-        f"{item} (" + ", ".join(f"{rl} n={n_by_item[item].get(rl, 0)}" for rl, _ in rounds) + ")"
+        _mark_significant(
+            f"{item} (" + ", ".join(f"{rl} n={n_by_item[item].get(rl, 0)}" for rl, _ in rounds) + ")",
+            item, significant_items,
+        )
         for item in item_order
     ]
     ax.set_yticks(base_y)
@@ -185,6 +226,7 @@ def plot_stacked_percentage_barh(
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
+    _finalize_significance_marks(ax, item_order, significant_items)
 
     handles, legend_labels = ax.get_legend_handles_labels()
     handles += round_handles
@@ -272,6 +314,7 @@ def plot_yes_counts_barh(
     ylabel: str,
     label_func,
     savepath: str,
+    significant_items: set[str] | None = None,
 ):
     if len(rounds) == 1:
         _, df = rounds[0]
@@ -314,7 +357,7 @@ def plot_yes_counts_barh(
         round_handles.append(Patch(facecolor="white", label=f"{round_label} (n={n_responses})", **rstyle))
 
     ax.set_yticks(base_y)
-    ax.set_yticklabels(item_order)
+    ax.set_yticklabels([_mark_significant(item, item, significant_items) for item in item_order])
     ax.set_xlabel('Percentage of Respondents')
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
@@ -325,8 +368,9 @@ def plot_yes_counts_barh(
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
+    _finalize_significance_marks(ax, item_order, significant_items)
 
-    plt.savefig(savepath, format=savepath.split('.')[-1])
+    plt.savefig(savepath, format=savepath.split('.')[-1], bbox_inches="tight")
     plt.show()
 
 
@@ -468,6 +512,8 @@ def plot_diverging_usefulness_harmfulness(
     width: float = 14.0,
     show_legend: bool = True,
     savepath: str | None = None,
+    significant_use: set[str] | None = None,
+    significant_harm: set[str] | None = None,
 ):
     if len(rounds) == 1:
         _, df = rounds[0]
@@ -543,11 +589,19 @@ def plot_diverging_usefulness_harmfulness(
 
         round_handles.append(Patch(facecolor='0.8', label=round_label, **rstyle))
 
+    def _use_harm_suffix(task: str) -> str:
+        parts = []
+        if significant_use is not None and task in significant_use:
+            parts.append('Usefulness*')
+        if significant_harm is not None and task in significant_harm:
+            parts.append('Harmfulness*')
+        return f" [{', '.join(parts)}]" if parts else ""
+
     y_labels = [
         f"{task} (" + "; ".join(
             f"{round_label}: use n={use_valid.get(task, 0)}, harm n={harm_valid.get(task, 0)}"
             for round_label, _, _, use_valid, harm_valid in per_round
-        ) + ")"
+        ) + ")" + _use_harm_suffix(task)
         for task in task_order
     ]
     ax.set_yticks(base_y)
@@ -565,6 +619,16 @@ def plot_diverging_usefulness_harmfulness(
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
+
+    if significant_use is not None or significant_harm is not None:
+        sig_either = (significant_use or set()) | (significant_harm or set())
+        for text, task in zip(ax.get_yticklabels(), task_order):
+            if task in sig_either:
+                text.set_fontweight('bold')
+        # Appended to the xlabel (not a floating ax.text annotation) so it's
+        # laid out and measured like any other label instead of risking
+        # overlap with the xlabel itself — see _finalize_significance_marks.
+        ax.set_xlabel(f"{ax.get_xlabel()}\n{_SIGNIFICANCE_CAPTION}")
 
     if show_legend:
         use_handles = [

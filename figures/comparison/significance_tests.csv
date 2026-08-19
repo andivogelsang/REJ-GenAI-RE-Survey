@@ -1,0 +1,169 @@
+family,item,n1,n2,count1,count2,pct1,pct2,effect_size,effect_label,p,q,significant
+RQ1: Usage by RE discipline,Management,64,48,9.0,22.0,14.0625,45.83333333333333,0.1933884297520661,odds_ratio,0.00026545577910387636,0.001592734674623258,True
+RQ1: Usage by RE discipline,Specification,64,48,42.0,40.0,65.625,83.33333333333334,0.38181818181818183,odds_ratio,0.051662489973904324,0.10332497994780865,False
+RQ1: Usage by RE discipline,Validation,64,48,25.0,29.0,39.0625,60.416666666666664,0.41998231653404067,odds_ratio,0.035355383552010754,0.10332497994780865,False
+RQ1: Usage by RE discipline,RE in General,109,69,64.0,48.0,58.71559633027523,69.56521739130434,0.6222222222222222,odds_ratio,0.15523507153285393,0.2328526072992809,False
+RQ1: Usage by RE discipline,Analysis and Negotiation,64,48,27.0,26.0,42.1875,54.166666666666664,0.6174636174636174,odds_ratio,0.25272050167743587,0.30326460201292305,False
+RQ1: Usage by RE discipline,Elicitation,64,48,38.0,33.0,59.375,68.75,0.6643356643356644,odds_ratio,0.32912014088043495,0.32912014088043495,False
+RQ2: Prevention reasons,Limited scope of AI applications in RE,85,50,16.0,1.0,18.823529411764707,2.0,11.36231884057971,odds_ratio,0.003141788675320309,0.04084325277916402,True
+RQ2: Prevention reasons,Lack of awareness or knowledge,85,50,26.0,7.0,30.58823529411765,14.000000000000002,2.7070217917675543,odds_ratio,0.038000717864683065,0.2283746470411223,False
+RQ2: Prevention reasons,Insufficient quality / availability of input data,85,50,14.0,16.0,16.470588235294116,32.0,0.41901408450704225,odds_ratio,0.052701841624874374,0.2283746470411223,False
+RQ2: Prevention reasons,Lack of support / tools,85,50,23.0,9.0,27.058823529411764,18.0,1.689964157706093,odds_ratio,0.29614836566641434,0.8814933899093256,False
+RQ2: Prevention reasons,"Unclear, inconsistent, low-quality results",85,50,24.0,11.0,28.235294117647058,22.0,1.3949329359165425,odds_ratio,0.5424574707134311,0.8814933899093256,False
+RQ2: Prevention reasons,Uncertainty about ROI,85,50,14.0,5.0,16.470588235294116,10.0,1.7746478873239437,odds_ratio,0.4425571095511086,0.8814933899093256,False
+RQ2: Prevention reasons,Ethical and legal concerns,85,50,38.0,19.0,44.70588235294118,38.0,1.3191489361702127,odds_ratio,0.4753927641868612,0.8814933899093256,False
+RQ2: Prevention reasons,Fear of job displacement,85,50,2.0,0.0,2.3529411764705883,0.0,inf,odds_ratio,0.5301271420674405,0.8814933899093256,False
+RQ2: Prevention reasons,Using AI is forbidden by my organization,85,50,14.0,10.0,16.470588235294116,20.0,0.7887323943661971,odds_ratio,0.6450717400063675,0.9317702911203085,False
+RQ2: Prevention reasons,Lack of time,85,50,16.0,8.0,18.823529411764707,16.0,1.2173913043478262,odds_ratio,0.8168112206484477,0.9653223516754381,False
+RQ2: Prevention reasons,Cultural resistance and organizational inertia,85,50,13.0,6.0,15.294117647058824,12.0,1.3240740740740742,odds_ratio,0.7983915832143897,0.9653223516754381,False
+RQ2: Prevention reasons,Unclear or inconsistent results,85,50,18.0,11.0,21.176470588235293,22.0,0.9525101763907734,odds_ratio,1.0,1.0,False
+RQ2: Prevention reasons,Other,8,10,8.0,10.0,100.0,100.0,,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,Bias in AI models,60,42,12.0,13.0,20.0,30.952380952380953,0.5576923076923077,odds_ratio,0.24562345001364638,0.6718854190932423,False
+RQ2: Perceived threats,Lack of transparency and explainability,60,42,16.0,7.0,26.666666666666668,16.666666666666664,1.8181818181818181,odds_ratio,0.33594270954662114,0.6718854190932423,False
+RQ2: Perceived threats,Over-reliance on AI,60,42,23.0,23.0,38.333333333333336,54.761904761904766,0.5135135135135135,odds_ratio,0.11083365849235088,0.6718854190932423,False
+RQ2: Perceived threats,Ethical and legal concerns,60,42,19.0,9.0,31.666666666666664,21.428571428571427,1.6991869918699187,odds_ratio,0.27123402988026724,0.6718854190932423,False
+RQ2: Perceived threats,Integration challenges,60,42,8.0,2.0,13.333333333333334,4.761904761904762,3.076923076923077,odds_ratio,0.1905836264646929,0.6718854190932423,False
+RQ2: Perceived threats,Loss of human intuition and judgement,60,42,16.0,16.0,26.666666666666668,38.095238095238095,0.5909090909090909,odds_ratio,0.2793657334717643,0.6718854190932423,False
+RQ2: Perceived threats,Resistance to adoption,60,42,1.0,3.0,1.6666666666666667,7.142857142857142,0.22033898305084745,odds_ratio,0.3031750233846914,0.6718854190932423,False
+RQ2: Perceived threats,Confidentiality,60,42,14.0,6.0,23.333333333333332,14.285714285714285,1.826086956521739,odds_ratio,0.31639131423645683,0.6718854190932423,False
+RQ2: Perceived threats,Data quality and availability,60,42,13.0,9.0,21.666666666666668,21.428571428571427,1.0141843971631206,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,Contextual understanding and ambiguity handling,60,42,14.0,8.0,23.333333333333332,19.047619047619047,1.2934782608695652,odds_ratio,0.6349534585040497,1.0,False
+RQ2: Perceived threats,Maintenance and adaptation,60,42,5.0,4.0,8.333333333333332,9.523809523809524,0.8636363636363636,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,Scalability issues,60,42,1.0,1.0,1.6666666666666667,2.380952380952381,0.6949152542372882,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,Cost and resource constraints,60,42,3.0,2.0,5.0,4.761904761904762,1.0526315789473684,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,Hallucinations,60,42,29.0,21.0,48.333333333333336,50.0,0.9354838709677419,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,I don't see any limitations / threats,60,42,0.0,0.0,0.0,0.0,,odds_ratio,1.0,1.0,False
+RQ2: Perceived threats,Other,2,1,2.0,1.0,100.0,100.0,,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,Skill set will change,60,41,54.0,34.0,90.0,82.92682926829268,1.8529411764705883,odds_ratio,0.3688183595412967,1.0,False
+RQ4: Skills + training,Conferences,60,41,7.0,8.0,11.666666666666666,19.51219512195122,0.5448113207547169,odds_ratio,0.3933505154887788,1.0,False
+RQ4: Skills + training,Case study analysis and group discussions,60,41,13.0,11.0,21.666666666666668,26.82926829268293,0.7543520309477756,odds_ratio,0.6360646622535648,1.0,False
+RQ4: Skills + training,Blended learning programs,60,41,4.0,4.0,6.666666666666667,9.75609756097561,0.6607142857142857,odds_ratio,0.7119197069959242,1.0,False
+RQ4: Skills + training,Mentoring programs,60,41,7.0,8.0,11.666666666666666,19.51219512195122,0.5448113207547169,odds_ratio,0.3933505154887788,1.0,False
+RQ4: Skills + training,Online courses and webinars,60,41,34.0,19.0,56.666666666666664,46.34146341463415,1.51417004048583,odds_ratio,0.31960511759995375,1.0,False
+RQ4: Skills + training,"Workshops, tutorials and hands-on labs",60,41,29.0,21.0,48.333333333333336,51.21951219512195,0.890937019969278,odds_ratio,0.8407021227898821,1.0,False
+RQ4: Skills + training,Newsletter,60,41,5.0,2.0,8.333333333333332,4.878048780487805,1.7727272727272727,odds_ratio,0.6977729068930454,1.0,False
+RQ4: Skills + training,Community of practice,60,41,14.0,9.0,23.333333333333332,21.951219512195124,1.0821256038647342,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,"“Classical Training” (e.g., Classroom Training, Face-2-Face Training)",60,41,20.0,17.0,33.33333333333333,41.46341463414634,0.7058823529411765,odds_ratio,0.5284697394133534,1.0,False
+RQ4: Skills + training,Other,3,0,3.0,0.0,100.0,0.0,,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,AI-supported Requirements Management,60,41,18.0,18.0,30.0,43.90243902439025,0.5476190476190477,odds_ratio,0.20445401721527046,1.0,False
+RQ4: Skills + training,AI-supported Requirements Validation / Quality Assurance,60,41,24.0,15.0,40.0,36.58536585365854,1.1555555555555554,odds_ratio,0.8358414065745172,1.0,False
+RQ4: Skills + training,AI-supported Requirements Specification / Requirements Modeling,60,41,28.0,19.0,46.666666666666664,46.34146341463415,1.013157894736842,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,AI-supported Requirements Analysis and Negotiation,60,41,18.0,12.0,30.0,29.268292682926827,1.0357142857142858,odds_ratio,1.0,1.0,False
+RQ4: Skills + training,AI-supported Requirements Elicitation,60,41,25.0,16.0,41.66666666666667,39.02439024390244,1.1160714285714286,odds_ratio,0.8386133839429951,1.0,False
+RQ4: Skills + training,Hackathons,60,41,8.0,2.0,13.333333333333334,4.878048780487805,3.0,odds_ratio,0.1946731570658332,1.0,False
+RQ4: Skills + training,Other,1,2,1.0,2.0,100.0,100.0,,odds_ratio,1.0,1.0,False
+Demographics: Role / position,Business Analyst,109,69,33.0,23.0,30.275229357798167,33.33333333333333,0.868421052631579,odds_ratio,0.740988925498886,0.9482136561540455,False
+Demographics: Role / position,Product Owner,109,69,19.0,13.0,17.431192660550458,18.84057971014493,0.9094017094017094,odds_ratio,0.8428565832480405,0.9482136561540455,False
+Demographics: Role / position,Requirements Engineer,109,69,57.0,34.0,52.293577981651374,49.275362318840585,1.128393665158371,odds_ratio,0.7589359763055465,0.9482136561540455,False
+Demographics: Role / position,Software Architect,109,69,8.0,7.0,7.339449541284404,10.144927536231885,0.7015558698727016,odds_ratio,0.5837291332894977,0.9482136561540455,False
+Demographics: Role / position,UI / UX Designer,109,69,5.0,5.0,4.587155963302752,7.246376811594203,0.6153846153846154,odds_ratio,0.5131126306685789,0.9482136561540455,False
+Demographics: Role / position,Software Developer,109,69,11.0,12.0,10.091743119266056,17.391304347826086,0.5331632653061225,odds_ratio,0.17414231926118728,0.9482136561540455,False
+Demographics: Role / position,Technical Leader,109,69,12.0,6.0,11.009174311926607,8.695652173913043,1.2989690721649485,odds_ratio,0.7995840696404822,0.9482136561540455,False
+Demographics: Role / position,Project Manager,109,69,19.0,14.0,17.431192660550458,20.28985507246377,0.8293650793650794,odds_ratio,0.6937323774367572,0.9482136561540455,False
+Demographics: Role / position,Other,29,22,29.0,22.0,100.0,100.0,,odds_ratio,1.0,1.0,False
+Demographics: Region,Europe,109,69,99.0,56.0,90.82568807339449,81.15942028985508,2.2982142857142858,odds_ratio,0.06975487668706676,0.13950975337413352,False
+Demographics: Region,North America,109,69,4.0,8.0,3.669724770642202,11.594202898550725,0.2904761904761905,odds_ratio,0.062413128934434445,0.13950975337413352,False
+Demographics: Region,South America,109,69,3.0,7.0,2.7522935779816518,10.144927536231885,0.25067385444743934,odds_ratio,0.047760120563367425,0.13950975337413352,False
+Demographics: Region,Asia,109,69,8.0,8.0,7.339449541284404,11.594202898550725,0.6039603960396039,odds_ratio,0.4213563095637112,0.6320344643455668,False
+Demographics: Region,Australia - New Zealand (Oceania),109,69,1.0,2.0,0.9174311926605505,2.898550724637681,0.3101851851851852,odds_ratio,0.5605447447239487,0.6726536936687384,False
+Demographics: Region,Africa,109,69,2.0,1.0,1.834862385321101,1.4492753623188406,1.2710280373831775,odds_ratio,1.0,1.0,False
+Demographics: Application domain,Research,109,69,12.0,18.0,11.009174311926607,26.08695652173913,0.35051546391752575,odds_ratio,0.012959535126445453,0.1684739566437909,False
+Demographics: Application domain,Automotive,109,69,28.0,11.0,25.688073394495415,15.942028985507244,1.8226711560044893,odds_ratio,0.14042641405795941,0.45114599897117547,False
+Demographics: Application domain,Defense,109,69,3.0,6.0,2.7522935779816518,8.695652173913043,0.2971698113207547,odds_ratio,0.09130335648023931,0.45114599897117547,False
+Demographics: Application domain,Education,109,69,14.0,14.0,12.844036697247708,20.28985507246377,0.5789473684210527,odds_ratio,0.20822123029438866,0.45114599897117547,False
+Demographics: Application domain,IT / Software,109,69,73.0,53.0,66.97247706422019,76.81159420289855,0.6121593291404612,odds_ratio,0.17884814570643942,0.45114599897117547,False
+Demographics: Application domain,Telecommunication,109,69,5.0,8.0,4.587155963302752,11.594202898550725,0.36658653846153844,odds_ratio,0.13623565395628975,0.45114599897117547,False
+Demographics: Application domain,Transport and Logistics,109,69,10.0,3.0,9.174311926605505,4.3478260869565215,2.2222222222222223,odds_ratio,0.37558300022472857,0.6975112861316388,False
+Demographics: Application domain,"Chemicals, pharmaceuticals, medical technology",109,69,12.0,5.0,11.009174311926607,7.246376811594203,1.5835051546391752,odds_ratio,0.44727884391127454,0.7012108132623223,False
+Demographics: Application domain,Mechanical Engineering,109,69,7.0,2.0,6.422018348623854,2.898550724637681,2.299019607843137,odds_ratio,0.48545363995083846,0.7012108132623223,False
+Demographics: Application domain,Trade,109,69,2.0,2.0,1.834862385321101,2.898550724637681,0.6261682242990654,odds_ratio,0.641739334746381,0.8342611351702953,False
+Demographics: Application domain,Aerospace,109,69,3.0,2.0,2.7522935779816518,2.898550724637681,0.9481132075471698,odds_ratio,1.0,1.0,False
+Demographics: Application domain,Banking / Insurances,109,69,19.0,12.0,17.431192660550458,17.391304347826086,1.0027777777777778,odds_ratio,1.0,1.0,False
+Demographics: Application domain,Other,20,15,20.0,15.0,100.0,100.0,,odds_ratio,1.0,1.0,False
+Demographics: Organization type,University / Research,109,69,2.0,13.0,1.834862385321101,18.84057971014493,0.08051761322789361,odds_ratio,0.00010295732760928337,0.0007207012932649836,True
+Demographics: Organization type,Industry - Large enterprise (at least 250 employees),109,69,66.0,22.0,60.550458715596335,31.88405797101449,3.2790697674418605,odds_ratio,0.00022084106573628268,0.0007729437300769894,True
+Demographics: Organization type,Industry - Small enterprise (10-49 employees),109,69,7.0,10.0,6.422018348623854,14.492753623188406,0.40490196078431373,odds_ratio,0.11402565648375082,0.2660598651287519,False
+Demographics: Organization type,Industry - Micro enterprise (up to 10 employees),109,69,5.0,7.0,4.587155963302752,10.144927536231885,0.4258241758241758,odds_ratio,0.2187804921432872,0.3564156490974429,False
+Demographics: Organization type,Other,109,69,6.0,7.0,5.5045871559633035,10.144927536231885,0.5159500693481276,odds_ratio,0.2545826064981735,0.3564156490974429,False
+Demographics: Organization type,Industry - Medium-sized enterprise (50-249 employees),109,69,16.0,7.0,14.678899082568808,10.144927536231885,1.5238095238095237,odds_ratio,0.49311402789541214,0.5752996992113142,False
+Demographics: Organization type,Research-technology transfer,109,69,7.0,3.0,6.422018348623854,4.3478260869565215,1.5098039215686274,odds_ratio,0.7426293310856791,0.7426293310856791,False
+RQ3: Elicitation,Prototyping for requirements elicitation (Usefulness),59,51,,,,,0.20937188434695908,rank_biserial_r,0.0510960288321877,0.21012239314089282,False
+RQ3: Elicitation,Preparation of workshops / focus groups (Harmfulness),49,36,,,,,0.2386621315192744,rank_biserial_r,0.04758489470035182,0.21012239314089282,False
+RQ3: Elicitation,Creativity / ideation ideas / requirements) (Harmfulness),61,45,,,,,0.20728597449908925,rank_biserial_r,0.05836733142802578,0.21012239314089282,False
+RQ3: Elicitation,Preparation of field studies / observations (Harmfulness),43,34,,,,,0.29890560875512995,rank_biserial_r,0.0190042836666274,0.21012239314089282,False
+RQ3: Elicitation,Prototyping for requirements elicitation (Harmfulness),44,42,,,,,0.23322510822510822,rank_biserial_r,0.05324832079262402,0.21012239314089282,False
+RQ3: Elicitation,Preparation of surveys / interview guidelines (Harmfulness),51,37,,,,,0.19978802331743506,rank_biserial_r,0.09504397205934931,0.28513191617804795,False
+RQ3: Elicitation,Preparation of field studies / observations (Usefulness),56,37,,,,,0.18388030888030893,rank_biserial_r,0.12539837711116467,0.3157173413618175,False
+RQ3: Elicitation,Creativity / ideation ideas / requirements) (Usefulness),75,51,,,,,0.1440522875816993,rank_biserial_r,0.15785867068090875,0.3157173413618175,False
+RQ3: Elicitation,Analysis of elicited data (Usefulness),68,52,,,,,0.1481900452488688,rank_biserial_r,0.1482414556888705,0.3157173413618175,False
+RQ3: Elicitation,Preparation of surveys / interview guidelines (Usefulness),64,45,,,,,0.14375000000000004,rank_biserial_r,0.17576197189597942,0.3163715494127629,False
+RQ3: Elicitation,Performing domain analysis (Usefulness),66,47,,,,,0.13088330109606705,rank_biserial_r,0.21527319596014582,0.35226522975296587,False
+RQ3: Elicitation,Identification / analysis of stakeholders and their needs (Usefulness),69,48,,,,,0.09178743961352653,rank_biserial_r,0.38815140861654474,0.5369166512480561,False
+RQ3: Elicitation,Performing domain analysis (Harmfulness),51,41,,,,,0.09756097560975607,rank_biserial_r,0.40745070833091734,0.5369166512480561,False
+RQ3: Elicitation,Analysis of as-is situations / as-is scenarios (Usefulness),63,45,,,,,0.08924162257495594,rank_biserial_r,0.4176018398595992,0.5369166512480561,False
+RQ3: Elicitation,Identification / analysis of stakeholders and their needs (Harmfulness),55,43,,,,,0.07145877378435517,rank_biserial_r,0.5333918087704952,0.6400701705245943,False
+RQ3: Elicitation,Preparation of workshops / focus groups (Usefulness),64,45,,,,,0.056944444444444464,rank_biserial_r,0.6009065235679061,0.6587109981054996,False
+RQ3: Elicitation,Analysis of as-is situations / as-is scenarios (Harmfulness),52,40,,,,,0.05817307692307694,rank_biserial_r,0.6221159426551941,0.6587109981054996,False
+RQ3: Elicitation,Analysis of elicited data (Harmfulness),55,47,,,,,-0.015087040618955605,rank_biserial_r,0.8949259953312769,0.894925995331277,False
+RQ3: Analysis,Requirements prioritization (Usefulness),54,42,,,,,0.31525573192239864,rank_biserial_r,0.006615388179153274,0.07714802735963738,False
+RQ3: Analysis,Stakeholder alignment and consensus building (Usefulness),48,42,,,,,0.3134920634920635,rank_biserial_r,0.008572003039959709,0.07714802735963738,False
+RQ3: Analysis,Gap analysis (Usefulness),49,36,,,,,0.29818594104308394,rank_biserial_r,0.015235701199171489,0.09141420719502895,False
+RQ3: Analysis,Trade-off analysis (Usefulness),40,38,,,,,0.24934210526315792,rank_biserial_r,0.04963068892938149,0.19668599928517963,False
+RQ3: Analysis,Conflict identification and resolution (Harmfulness),43,39,,,,,0.23852116875372686,rank_biserial_r,0.05463499980143879,0.19668599928517963,False
+RQ3: Analysis,Requirements refinement and clarification (Usefulness),58,43,,,,,0.2068965517241379,rank_biserial_r,0.06735222611394927,0.20205667834184782,False
+RQ3: Analysis,Requirements categorization and grouping (Usefulness),56,42,,,,,0.1892006802721088,rank_biserial_r,0.09109104740592779,0.23423412190095716,False
+RQ3: Analysis,Gap analysis (Harmfulness),41,33,,,,,0.17294900221729492,rank_biserial_r,0.1837033530628297,0.40005906524205126,False
+RQ3: Analysis,Feasibility analysis / Risk analysis (Harmfulness),46,35,,,,,0.16149068322981364,rank_biserial_r,0.20002953262102563,0.40005906524205126,False
+RQ3: Analysis,Stakeholder alignment and consensus building (Harmfulness),41,35,,,,,-0.13588850174216027,rank_biserial_r,0.29338270988806436,0.5280888777985158,False
+RQ3: Analysis,Feasibility analysis / Risk analysis (Usefulness),52,40,,,,,0.11538461538461542,rank_biserial_r,0.333463596427927,0.5456677032456988,False
+RQ3: Analysis,Requirements categorization and grouping (Harmfulness),49,38,,,,,0.10257787325456502,rank_biserial_r,0.3865765785857641,0.5596201802780228,False
+RQ3: Analysis,Change impact analysis (Usefulness),45,38,,,,,0.10233918128654973,rank_biserial_r,0.4116521454803692,0.5596201802780228,False
+RQ3: Analysis,Requirements prioritization (Harmfulness),48,36,,,,,-0.09722222222222232,rank_biserial_r,0.43526014021624004,0.5596201802780228,False
+RQ3: Analysis,Conflict identification and resolution (Usefulness),53,44,,,,,0.07118353344768436,rank_biserial_r,0.5370025409057526,0.5937455804997167,False
+RQ3: Analysis,Trade-off analysis (Harmfulness),33,35,,,,,0.08831168831168834,rank_biserial_r,0.5187932685858424,0.5937455804997167,False
+RQ3: Analysis,Requirements refinement and clarification (Harmfulness),47,37,,,,,0.06728004600345028,rank_biserial_r,0.5848184344788807,0.5937455804997167,False
+RQ3: Analysis,Change impact analysis (Harmfulness),40,35,,,,,0.06999999999999995,rank_biserial_r,0.5937455804997167,0.5937455804997167,False
+RQ3: Specification and Modeling,Creating document structures (Usefulness),51,44,,,,,0.21613190730837795,rank_biserial_r,0.05374176227471369,0.6449011472965642,False
+RQ3: Specification and Modeling,Drafting specifications (Usefulness),54,43,,,,,0.11843238587424632,rank_biserial_r,0.290683979338871,0.7653399481049232,False
+RQ3: Specification and Modeling,Formulating requirements (Usefulness),56,44,,,,,0.15097402597402598,rank_biserial_r,0.17404764699046749,0.7653399481049232,False
+RQ3: Specification and Modeling,Creating use case descriptions (Usefulness),53,42,,,,,0.14016172506738545,rank_biserial_r,0.22010533473439986,0.7653399481049232,False
+RQ3: Specification and Modeling,Defining acceptance criteria (Usefulness),56,40,,,,,0.1160714285714286,rank_biserial_r,0.31889164504371803,0.7653399481049232,False
+RQ3: Specification and Modeling,Creating diagrams (Usefulness),42,44,,,,,0.07846320346320346,rank_biserial_r,0.5213564081065858,0.9215420685737556,False
+RQ3: Specification and Modeling,Creating document structures (Harmfulness),44,38,,,,,-0.023325358851674638,rank_biserial_r,0.8461387352058063,0.9215420685737556,False
+RQ3: Specification and Modeling,Drafting specifications (Harmfulness),44,38,,,,,0.04366028708133973,rank_biserial_r,0.7270986343758044,0.9215420685737556,False
+RQ3: Specification and Modeling,Formulating requirements (Harmfulness),48,39,,,,,-0.0443376068376069,rank_biserial_r,0.716617365981471,0.9215420685737556,False
+RQ3: Specification and Modeling,Creating use case descriptions (Harmfulness),42,37,,,,,-0.04890604890604888,rank_biserial_r,0.7004952965543743,0.9215420685737556,False
+RQ3: Specification and Modeling,Creating diagrams (Harmfulness),38,40,,,,,-0.017763157894736814,rank_biserial_r,0.8929843206044007,0.9215420685737556,False
+RQ3: Specification and Modeling,Defining acceptance criteria (Harmfulness),49,35,,,,,0.012827988338192431,rank_biserial_r,0.9215420685737556,0.9215420685737556,False
+RQ3: Validation and QA,Planning and conducting reviews or inspections (Usefulness),44,39,,,,,0.4825174825174825,rank_biserial_r,0.0001035968529342489,0.0016575496469479823,True
+RQ3: Validation and QA,Identification of unnecessary / incorrect requirements (Usefulness),50,39,,,,,0.3728205128205129,rank_biserial_r,0.0019407041773382254,0.015525633418705803,True
+RQ3: Validation and QA,Validation against stakeholder needs (Usefulness),46,42,,,,,0.3152173913043478,rank_biserial_r,0.008458100559940708,0.03994492667244489,True
+RQ3: Validation and QA,Identification of incomplete / missing requirements (Usefulness),51,41,,,,,0.3041606886657102,rank_biserial_r,0.009986231668111223,0.03994492667244489,True
+RQ3: Validation and QA,Validation against business objectives (Usefulness),45,42,,,,,0.2613756613756614,rank_biserial_r,0.03037234188962576,0.09719149404680243,False
+RQ3: Validation and QA,Identification of requirements that are difficult to understand (Usefulness),53,41,,,,,0.22733548090197886,rank_biserial_r,0.05113744433300361,0.13636651822134296,False
+RQ3: Validation and QA,Validation against stakeholder needs (Harmfulness),42,37,,,,,-0.21106821106821116,rank_biserial_r,0.09647314990771566,0.22051005693192152,False
+RQ3: Validation and QA,Identification of inconsistencies (Usefulness),52,42,,,,,0.13736263736263732,rank_biserial_r,0.22809129840844644,0.34983918953916654,False
+RQ3: Validation and QA,Validation against business objectives (Harmfulness),43,37,,,,,-0.16781898177247023,rank_biserial_r,0.18568514418220816,0.34983918953916654,False
+RQ3: Validation and QA,Identification of unnecessary / incorrect requirements (Harmfulness),42,36,,,,,-0.16468253968253976,rank_biserial_r,0.19820702440381266,0.34983918953916654,False
+RQ3: Validation and QA,Identification of incomplete / missing requirements (Harmfulness),44,38,,,,,-0.13995215311004783,rank_biserial_r,0.2623793921543749,0.34983918953916654,False
+RQ3: Validation and QA,Identification of requirements that are difficult to understand (Harmfulness),43,36,,,,,0.14470284237726094,rank_biserial_r,0.24912888230018349,0.34983918953916654,False
+RQ3: Validation and QA,Planning and conducting reviews or inspections (Harmfulness),36,35,,,,,0.10476190476190472,rank_biserial_r,0.4321448725583329,0.5318706123794866,False
+RQ3: Validation and QA,Creation of test cases (Usefulness),51,42,,,,,0.06629318394024275,rank_biserial_r,0.5656297665536318,0.6464340189184364,False
+RQ3: Validation and QA,Creation of test cases (Harmfulness),42,36,,,,,-0.02314814814814814,rank_biserial_r,0.8602975731583106,0.9041389884726526,False
+RQ3: Validation and QA,Identification of inconsistencies (Harmfulness),45,38,,,,,0.01520467836257311,rank_biserial_r,0.9041389884726526,0.9041389884726526,False
+RQ3: Requirements Management,Requirements process assessment (Usefulness),42,34,,,,,0.44397759103641454,rank_biserial_r,0.0007267821942513725,0.007267821942513725,True
+RQ3: Requirements Management,Change management (Usefulness),43,37,,,,,0.21684475172847262,rank_biserial_r,0.08803920340677283,0.29346401135590944,False
+RQ3: Requirements Management,Configuration management (Usefulness),41,37,,,,,0.22610415293342123,rank_biserial_r,0.07478855326355968,0.29346401135590944,False
+RQ3: Requirements Management,Maintain requirements traceability (Usefulness),45,37,,,,,0.1777777777777778,rank_biserial_r,0.15511056577017188,0.31022113154034375,False
+RQ3: Requirements Management,Requirements tracking and monitoring (Usefulness),44,37,,,,,0.1805896805896806,rank_biserial_r,0.15173244740137035,0.31022113154034375,False
+RQ3: Requirements Management,Configuration management (Harmfulness),36,31,,,,,0.13888888888888884,rank_biserial_r,0.3116010552057561,0.5193350920095935,False
+RQ3: Requirements Management,Requirements process assessment (Harmfulness),33,31,,,,,0.1026392961876833,rank_biserial_r,0.4705111171702395,0.6721587388146278,False
+RQ3: Requirements Management,Maintain requirements traceability (Harmfulness),40,34,,,,,0.013235294117647012,rank_biserial_r,0.923266556388285,0.9245222846682258,False
+RQ3: Requirements Management,Change management (Harmfulness),36,32,,,,,0.02777777777777779,rank_biserial_r,0.8432883957302183,0.9245222846682258,False
+RQ3: Requirements Management,Requirements tracking and monitoring (Harmfulness),37,32,,,,,0.013513513513513487,rank_biserial_r,0.9245222846682258,0.9245222846682258,False
+Demographics: Experience (ordinal),Years of RE experience,109,69,,,,,-0.06009839117138682,rank_biserial_r,0.47046724046388044,0.6697074972089094,False
+Demographics: Experience (ordinal),RE-discipline experience — Elicitation,109,69,,,,,-0.04706820901475872,rank_biserial_r,0.5822896089389565,0.6697074972089094,False
+Demographics: Experience (ordinal),RE-discipline experience — Analysis and Negotiation,109,69,,,,,-0.040287195851615554,rank_biserial_r,0.6365463890491287,0.6697074972089094,False
+Demographics: Experience (ordinal),RE-discipline experience — Specification,109,69,,,,,-0.036298364579178344,rank_biserial_r,0.6697074972089094,0.6697074972089094,False
+Demographics: Experience (ordinal),RE-discipline experience — Validation,109,69,,,,,-0.07698444355803757,rank_biserial_r,0.36989496948927314,0.6697074972089094,False
+Demographics: Experience (ordinal),RE-discipline experience — Management,109,69,,,,,-0.0521207286265124,rank_biserial_r,0.5400412423754404,0.6697074972089094,False

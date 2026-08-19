@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import labels, plotting, schema, style
+from . import labels, plotting, schema, stats, style
 
 # Canonical RE-activity bracket labels, in the order the paper's Figure 1
 # uses them (RE in General is handled separately via the aliased
@@ -492,6 +492,187 @@ def print_demographic_comparison(
 
 
 # ---------------------------------------------------------------------------
+# Significance testing (round1 vs round2)
+# ---------------------------------------------------------------------------
+
+def _matched_items(
+    df1: pd.DataFrame, cols1: list[str], df2: pd.DataFrame, cols2: list[str], label_func
+) -> list[tuple[str, pd.Series, pd.Series]]:
+    """Pair up columns from df1/df2 by their clean label (same idea as
+    plotting.py's round-alignment logic) — needed because a question's raw
+    column text sometimes differs slightly between rounds even where the
+    bracket/item label doesn't.
+    """
+    by_label1 = {label_func(c): c for c in cols1}
+    by_label2 = {label_func(c): c for c in cols2}
+    return [(label, df1[col], df2[by_label2[label]]) for label, col in by_label1.items() if label in by_label2]
+
+
+def compare_round_significance(df1: pd.DataFrame, df2: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Round1-vs-round2 significance test for every family that already has
+    a comparison chart: Fisher's exact for Yes/No items, Mann-Whitney U for
+    ordinal items (5-point Likert usefulness/harmfulness, experience-level
+    scales). Benjamini-Hochberg FDR correction is applied *within* each
+    family — the same grouping each chart already uses — not once across
+    every test, so one item's family doesn't inflate another's.
+    """
+    results: dict[str, pd.DataFrame] = {}
+
+    usage_items = [("RE in General", df1['used_genai_for_re'], df2['used_genai_for_re'])] + [
+        (short_name, df1[_usage_activity_column(df1, bracket)], df2[_usage_activity_column(df2, bracket)])
+        for bracket, short_name in zip(_ACTIVITY_BRACKETS, _ACTIVITY_SHORT_NAMES)
+    ]
+    results['RQ1: Usage by RE discipline'] = stats.compare_categorical_family(usage_items)
+
+    results['RQ2: Prevention reasons'] = stats.compare_categorical_family(_matched_items(
+        df1, list(_select_prevention_block(df1).columns), df2, list(_select_prevention_block(df2).columns),
+        labels.label_strip_brackets_and_parens,
+    ))
+    results['RQ2: Perceived threats'] = stats.compare_categorical_family(_matched_items(
+        df1, list(_select_threats_block(df1).columns), df2, list(_select_threats_block(df2).columns),
+        labels.label_strip_brackets_and_parens,
+    ))
+
+    rq4_items = (
+        [("Skill set will change", df1[_skills_value_column(df1)], df2[_skills_value_column(df2)])]
+        + _matched_items(
+            df1, list(_select_training_interest_block(df1).columns),
+            df2, list(_select_training_interest_block(df2).columns), labels.label_from_brackets,
+        )
+        + _matched_items(
+            df1, list(_select_training_format_block(df1).columns),
+            df2, list(_select_training_format_block(df2).columns), labels.label_from_brackets,
+        )
+    )
+    results['RQ4: Skills + training'] = stats.compare_categorical_family(rq4_items)
+
+    results['Demographics: Role / position'] = stats.compare_categorical_family(_matched_items(
+        df1, list(_select_role_block(df1).columns), df2, list(_select_role_block(df2).columns),
+        labels.label_from_brackets,
+    ))
+    results['Demographics: Region'] = stats.compare_categorical_family(_matched_items(
+        df1, list(_select_region_block(df1).columns), df2, list(_select_region_block(df2).columns),
+        labels.label_from_brackets,
+    ))
+    results['Demographics: Application domain'] = stats.compare_categorical_family(_matched_items(
+        df1, _select_application_domain_columns(df1), df2, _select_application_domain_columns(df2),
+        labels.label_from_brackets,
+    ))
+
+    # Organization type is single-select/nominal (not ordinal), so it's
+    # tested one-vs-rest per category, reusing the same one-hot block the
+    # bar chart already builds (_org_type_block) rather than duplicating
+    # that logic here.
+    org1, org2 = _org_type_block(df1), _org_type_block(df2)
+    results['Demographics: Organization type'] = stats.compare_categorical_family(
+        [(cat, org1[cat], org2[cat]) for cat in ORG_TYPE_LABELS]
+    )
+
+    for phase_key, phase_marker, title in PHASES:
+        b1, b2 = _select_phase_block(df1, phase_marker), _select_phase_block(df2, phase_marker)
+        use_items = _matched_items(
+            df1, [c for c in b1.columns if 'Scale 1' in c], df2, [c for c in b2.columns if 'Scale 1' in c],
+            labels.extract_task_name,
+        )
+        harm_items = _matched_items(
+            df1, [c for c in b1.columns if 'Scale 2' in c], df2, [c for c in b2.columns if 'Scale 2' in c],
+            labels.extract_task_name,
+        )
+        rows = (
+            [{'item': f"{label} (Usefulness)", **stats.mannwhitney_test(s1, s2, plotting.USE_CENTER_OUT)}
+             for label, s1, s2 in use_items]
+            + [{'item': f"{label} (Harmfulness)", **stats.mannwhitney_test(s1, s2, plotting.HARM_CENTER_OUT)}
+               for label, s1, s2 in harm_items]
+        )
+        results[f'RQ3: {title}'] = stats.finalize_family(rows)
+
+    demo_ordinal_rows = [{
+        'item': 'Years of RE experience',
+        **stats.mannwhitney_test(
+            df1[_select_years_re_experience_column(df1)], df2[_select_years_re_experience_column(df2)],
+            YEARS_RE_EXPERIENCE_LABELS,
+        ),
+    }]
+    for activity, short_name in zip(_ACTIVITY_BRACKETS, _ACTIVITY_SHORT_NAMES):
+        demo_ordinal_rows.append({
+            'item': f'RE-discipline experience — {short_name}',
+            **stats.mannwhitney_test(
+                df1[_re_discipline_experience_column(df1, activity)],
+                df2[_re_discipline_experience_column(df2, activity)],
+                RE_DISCIPLINE_EXPERIENCE_LABELS,
+            ),
+        })
+    results['Demographics: Experience (ordinal)'] = stats.finalize_family(demo_ordinal_rows)
+
+    return results
+
+
+def print_significance_summary(results: dict[str, pd.DataFrame], alpha: float = 0.05) -> None:
+    """Print only the items that remain significant after within-family
+    Benjamini-Hochberg correction. Every item's full numbers — including the
+    non-significant ones, which matter for judging whether "not significant"
+    means "no difference" or just "underpowered" — are in the exported CSV
+    (see export_significance_csv), not repeated here.
+    """
+    print(f"=== Round 1 vs Round 2: significance testing (Benjamini-Hochberg FDR, alpha={alpha}) ===\n")
+    for family, df in results.items():
+        sig = df[df['q'] < alpha]
+        print(f"{family} ({len(df)} items tested)")
+        if sig.empty:
+            print("  no items significant after FDR correction")
+        else:
+            for item, row in sig.iterrows():
+                print(
+                    f"  {item}: {row['effect_label']}={row['effect_size']:.2f}, "
+                    f"p={row['p']:.4f}, q={row['q']:.4f} (n1={int(row['n1'])}, n2={int(row['n2'])})"
+                )
+        print()
+
+
+def export_significance_csv(results: dict[str, pd.DataFrame], outdir: str | Path, alpha: float = 0.05) -> None:
+    """One combined CSV (every family, every item) — easier to sort/filter
+    or pull into the paper than 14 small files.
+    """
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    combined = pd.concat(results, names=['family', 'item']).reset_index()
+    combined['significant'] = combined['q'] < alpha
+    combined.to_csv(outdir / "significance_tests.csv", index=False)
+
+
+def _significant_set(result_df: pd.DataFrame, alpha: float = 0.05) -> set[str]:
+    return set(result_df.index[result_df['q'] < alpha])
+
+
+def _significant_subset(result_df: pd.DataFrame, allowed_items: set[str], alpha: float = 0.05) -> set[str]:
+    """For a family combining several charts' items (e.g. RQ4's skill +
+    training-interest + training-format), keep only the significant items
+    that belong to one specific chart.
+    """
+    return _significant_set(result_df, alpha) & allowed_items
+
+
+def _significant_with_prefix_stripped(result_df: pd.DataFrame, prefix: str, alpha: float = 0.05) -> set[str]:
+    """For a family whose item labels are prefixed for readability in
+    print_demographic_summary-style output (e.g. "RE-discipline experience
+    — Elicitation") but whose chart uses the bare label ("Elicitation").
+    """
+    return {item[len(prefix):] for item in _significant_set(result_df, alpha) if item.startswith(prefix)}
+
+
+def _phase_significant_sets(result_df: pd.DataFrame, alpha: float = 0.05) -> tuple[set[str], set[str]]:
+    """Split one RQ3 phase family's significant items back into
+    (significant_use, significant_harm) task-label sets for the diverging
+    chart — each item is labelled "{task} (Usefulness)" / "{task}
+    (Harmfulness)" (see compare_round_significance).
+    """
+    sig = _significant_set(result_df, alpha)
+    use = {item[: -len(' (Usefulness)')] for item in sig if item.endswith(' (Usefulness)')}
+    harm = {item[: -len(' (Harmfulness)')] for item in sig if item.endswith(' (Harmfulness)')}
+    return use, harm
+
+
+# ---------------------------------------------------------------------------
 # Public entry points
 # ---------------------------------------------------------------------------
 
@@ -646,6 +827,10 @@ def generate_comparison_report(
 
     rounds_of = lambda f: [(round1_label, f(df1)), (round2_label, f(df2))]
 
+    # Computed once up front so significant items/tasks can be marked on the
+    # charts below, not just reported afterward.
+    significance = compare_round_significance(df1, df2)
+
     # Demographics — same variables/order as generate_round_report. No
     # comparison version for "participated in previous survey" (round2-only
     # question, no round1 counterpart to pair against).
@@ -655,6 +840,7 @@ def generate_comparison_report(
         ylabel="Application Domain",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "application_domains_comparison.pdf"),
+        significant_items=_significant_set(significance['Demographics: Application domain']),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_role_block),
@@ -662,6 +848,7 @@ def generate_comparison_report(
         ylabel="Role",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "role_comparison.pdf"),
+        significant_items=_significant_set(significance['Demographics: Role / position']),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_region_block),
@@ -669,6 +856,7 @@ def generate_comparison_report(
         ylabel="Region",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "region_comparison.pdf"),
+        significant_items=_significant_set(significance['Demographics: Region']),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_org_type_block),
@@ -676,10 +864,18 @@ def generate_comparison_report(
         ylabel="Organization Type",
         label_func=lambda cat: cat,
         savepath=str(outdir / "organization_type_comparison.pdf"),
+        significant_items=_significant_set(significance['Demographics: Organization type']),
     )
+    # Years of RE experience is tested as one ordinal (Mann-Whitney) variable,
+    # not per-category — so unlike the other demographic bar charts, no
+    # single bar "is" the significant result. Marked in the title instead of
+    # on a bar.
+    years_re_title = "Years of RE Experience"
+    if 'Years of RE experience' in _significant_set(significance['Demographics: Experience (ordinal)']):
+        years_re_title += " (distribution differs significantly *)"
     plotting.plot_yes_counts_barh(
         rounds_of(_years_of_re_experience_block),
-        title="Years of RE Experience",
+        title=years_re_title,
         ylabel="Years of Experience",
         label_func=lambda cat: cat,
         savepath=str(outdir / "years_of_re_experience_comparison.pdf"),
@@ -690,6 +886,9 @@ def generate_comparison_report(
         colors=style.COLORS['experience_greens'],
         title="Self-Assessed RE-Discipline Experience",
         savepath=str(outdir / "re_discipline_experience_comparison.pdf"),
+        significant_items=_significant_with_prefix_stripped(
+            significance['Demographics: Experience (ordinal)'], 'RE-discipline experience — '
+        ),
     )
     plotting.plot_stacked_percentage_barh(
         rounds_of(_tool_usage_frequency_df),
@@ -714,6 +913,7 @@ def generate_comparison_report(
         colors=[style.COLORS['yes'], style.COLORS['no']],
         title="GenAI Usage by RE Discipline",
         savepath=str(outdir / "usage_comparison.pdf"),
+        significant_items=_significant_set(significance['RQ1: Usage by RE discipline']),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_prevention_block),
@@ -721,6 +921,7 @@ def generate_comparison_report(
         ylabel="Reason",
         label_func=labels.label_strip_brackets_and_parens,
         savepath=str(outdir / "prevention_comparison.pdf"),
+        significant_items=_significant_set(significance['RQ2: Prevention reasons']),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_threats_block),
@@ -728,20 +929,29 @@ def generate_comparison_report(
         ylabel="Limitation / Threat",
         label_func=labels.label_strip_brackets_and_parens,
         savepath=str(outdir / "threats_comparison.pdf"),
+        significant_items=_significant_set(significance['RQ2: Perceived threats']),
     )
     for phase_key, phase_marker, title in PHASES:
+        significant_use, significant_harm = _phase_significant_sets(significance[f'RQ3: {title}'])
         plotting.plot_diverging_usefulness_harmfulness(
             rounds_of(lambda df, m=phase_marker: _select_phase_block(df, m)),
             title_prefix=title,
             savepath=str(outdir / f"{phase_key}_assessment_comparison.pdf"),
             show_legend=False,
+            significant_use=significant_use,
+            significant_harm=significant_harm,
         )
+
+    rq4_family = significance['RQ4: Skills + training']
+    training_interest_labels = {labels.label_from_brackets(c) for c in _select_training_interest_block(df1).columns}
+    training_format_labels = {labels.label_from_brackets(c) for c in _select_training_format_block(df1).columns}
     plotting.plot_stacked_percentage_barh(
         rounds_of(_skills_percentage_df),
         categories=['Yes', 'No'],
         colors=[style.COLORS['yes'], style.COLORS['no']],
         title="Skill Set Change",
         savepath=str(outdir / "skills_comparison.pdf"),
+        significant_items=_significant_subset(rq4_family, {"Skill set will change"}),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_training_interest_block),
@@ -749,6 +959,7 @@ def generate_comparison_report(
         ylabel="Training Interest",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_interest_comparison.pdf"),
+        significant_items=_significant_subset(rq4_family, training_interest_labels),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_training_format_block),
@@ -756,6 +967,10 @@ def generate_comparison_report(
         ylabel="Training Format",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_format_comparison.pdf"),
+        significant_items=_significant_subset(rq4_family, training_format_labels),
     )
+
+    print_significance_summary(significance)
+    export_significance_csv(significance, outdir)
 
     return schema.diff_schemas(df1, df2)
