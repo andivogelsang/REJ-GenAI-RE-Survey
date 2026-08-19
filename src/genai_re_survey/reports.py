@@ -16,10 +16,7 @@ two-round list — so a fix or new figure here always applies to both.
 
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import seaborn as sns
 
 from . import labels, plotting, schema, style
 
@@ -61,6 +58,77 @@ def _is_comment_column(col: str) -> bool:
 def _select_application_domain_columns(df: pd.DataFrame) -> list[str]:
     anchor = "In which application domain(s) have you worked over the past 5 years?"
     return [c for c in df.columns if anchor in c]
+
+
+def _select_role_block(df: pd.DataFrame) -> pd.DataFrame:
+    cols = [c for c in df.columns if "current role or position" in c and not _is_comment_column(c)]
+    return df[cols]
+
+
+def _select_region_block(df: pd.DataFrame) -> pd.DataFrame:
+    cols = [c for c in df.columns if "regions do you typically work" in c and not _is_comment_column(c)]
+    return df[cols]
+
+
+def _select_org_type_column(df: pd.DataFrame) -> str:
+    anchor = "organization / business types"
+    for c in df.columns:
+        if anchor in c and not c.endswith("[Other]"):
+            return c
+    raise KeyError("organization type column not found")
+
+
+def _select_years_re_experience_column(df: pd.DataFrame) -> str:
+    anchor = "How many years of professional experience do you have in Requirements Engineering"
+    for c in df.columns:
+        if anchor in c:
+            return c
+    raise KeyError("years-of-RE-experience column not found")
+
+
+def _one_hot_yesno_block(df: pd.DataFrame, col: str, categories: list[str]) -> pd.DataFrame:
+    """Turn a single-select categorical column into one Yes/No column per
+    category (column name = category label), so it can be charted with
+    plot_yes_counts_barh exactly like the role/region multi-select blocks —
+    one bar per category — instead of a single 100%-stacked bar.
+    """
+    s = df[col]
+    data = {}
+    for cat in categories:
+        col_vals = pd.Series(index=s.index, dtype=object)
+        col_vals[s.notna()] = 'No'
+        col_vals[s == cat] = 'Yes'
+        data[cat] = col_vals
+    return pd.DataFrame(data)
+
+
+def _years_of_re_experience_block(df: pd.DataFrame) -> pd.DataFrame:
+    return _one_hot_yesno_block(df, _select_years_re_experience_column(df), YEARS_RE_EXPERIENCE_LABELS)
+
+
+def _org_type_block(df: pd.DataFrame) -> pd.DataFrame:
+    return _one_hot_yesno_block(df, _select_org_type_column(df), ORG_TYPE_LABELS)
+
+
+def _participated_before_block(df: pd.DataFrame) -> pd.DataFrame:
+    return _one_hot_yesno_block(
+        df, "Did you participate in our previous survey as well?", PARTICIPATED_BEFORE_LABELS
+    )
+
+
+def _select_other_freetext_column(df: pd.DataFrame, anchor: str) -> str | None:
+    for c in df.columns:
+        if anchor in c and c.endswith("[Other]"):
+            return c
+    return None
+
+
+def _re_discipline_experience_column(df: pd.DataFrame, activity_bracket: str) -> str:
+    anchor = "Please assess your knowledge / experience in the various"
+    for c in df.columns:
+        if anchor in c and c.endswith(f"[{activity_bracket}]"):
+            return c
+    raise KeyError(f"RE-discipline experience column for {activity_bracket!r} not found")
 
 
 def _usage_activity_column(df: pd.DataFrame, activity_bracket: str) -> str:
@@ -116,25 +184,30 @@ def _skills_comment_column(df: pd.DataFrame) -> str:
 # Raw-df -> plot-ready table
 # ---------------------------------------------------------------------------
 
-def _usage_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
+def _multi_item_categorical_percentage_df(
+    df: pd.DataFrame, cols: list[str], names: list[str], categories: list[str]
+) -> pd.DataFrame:
     # Index is the *clean* item name (no n baked in) — plotting.py aligns
     # round1/round2 rows by this index, and round-specific n's differ, so
     # embedding n here would make every item look round-unique and silently
     # break the round-to-round pairing. n travels in its own column instead.
-    cols = ["used_genai_for_re"] + [_usage_activity_column(df, a) for a in _ACTIVITY_BRACKETS]
-    names = ["RE in General"] + _ACTIVITY_SHORT_NAMES
-
-    yes_counts, no_counts, n_counts = [], [], []
+    rows, n_counts = [], []
     for col in cols:
         vc = df[col].value_counts()
-        yes_counts.append(vc.get('Yes', 0))
-        no_counts.append(vc.get('No', 0))
-        n_counts.append(df[col].notna().sum())
+        n = df[col].notna().sum()
+        counts = pd.Series({cat: vc.get(cat, 0) for cat in categories}, dtype=float)
+        rows.append((counts / n * 100) if n else counts)
+        n_counts.append(n)
 
-    plot_df = pd.DataFrame({'Yes': yes_counts, 'No': no_counts}, index=names)
-    plot_df_percentage = plot_df.apply(lambda x: x / x.sum() * 100 if x.sum() else x, axis=1)
-    plot_df_percentage['n'] = n_counts
-    return plot_df_percentage
+    result = pd.DataFrame(rows, index=names)[categories]
+    result['n'] = n_counts
+    return result
+
+
+def _usage_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
+    cols = ["used_genai_for_re"] + [_usage_activity_column(df, a) for a in _ACTIVITY_BRACKETS]
+    names = ["RE in General"] + _ACTIVITY_SHORT_NAMES
+    return _multi_item_categorical_percentage_df(df, cols, names, ['Yes', 'No'])
 
 
 def _skills_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -151,16 +224,11 @@ def _skills_percentage_df(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(pct, index=["Skill set will change"])
 
 
-def _application_domain_counts(df: pd.DataFrame) -> pd.Series:
-    cols = _select_application_domain_columns(df)
-    counts = df[cols].apply(lambda x: (x == 'Yes').sum())
-    counts.index = [labels.label_from_brackets(c) for c in counts.index]
-    return counts.sort_values(ascending=False)
-
-
-# Ordinal single-choice questions about the respondent's own GenAI usage
-# habits — collected and cross-round-aliased in schema.py, but general
-# demographic/context questions rather than RE-task-specific RQ1-4 content.
+# Ordinal/nominal single- or multi-choice demographic questions — collected
+# (and, where reworded between rounds, cross-round-aliased in schema.py) but
+# general context about the respondent rather than RE-task-specific RQ1-4
+# content. Mirrors loading._DEMOGRAPHIC_ANCHORS: every variable named there
+# gets a chart/summary via this section.
 FREQUENCY_LABELS = [
     'Never used', 'Tried once', 'At least once a month',
     'At least once a week', 'Daily', 'Other',
@@ -169,6 +237,20 @@ DURATION_LABELS = [
     'No Experience at all', 'Less than 1 year', '1-2 years',
     '3-4 years', 'More than 4 years',
 ]
+YEARS_RE_EXPERIENCE_LABELS = [
+    'none / new to RE', '< 2 years', '3-5 years', '6-10 years', '> 10 years',
+]
+ORG_TYPE_LABELS = [
+    'Industry - Micro enterprise (up to 10 employees)',
+    'Industry - Small enterprise (10-49 employees)',
+    'Industry - Medium-sized enterprise (50-249 employees)',
+    'Industry - Large enterprise (at least 250 employees)',
+    'Research-technology transfer',
+    'University / Research',
+    'Other',
+]
+RE_DISCIPLINE_EXPERIENCE_LABELS = ['No Experience', 'Beginner', 'Intermediate', 'Advanced', 'Expert']
+PARTICIPATED_BEFORE_LABELS = ['Yes', 'No', "I don't remember"]
 
 
 def _categorical_percentage_df(df: pd.DataFrame, col: str, categories: list[str], row_label: str) -> pd.DataFrame:
@@ -195,6 +277,11 @@ def _experience_duration_df(df: pd.DataFrame) -> pd.DataFrame:
     return _categorical_percentage_df(
         df, 'genai_experience_duration', DURATION_LABELS, 'GenAI Experience Duration'
     )
+
+
+def _re_discipline_experience_df(df: pd.DataFrame) -> pd.DataFrame:
+    cols = [_re_discipline_experience_column(df, a) for a in _ACTIVITY_BRACKETS]
+    return _multi_item_categorical_percentage_df(df, cols, _ACTIVITY_SHORT_NAMES, RE_DISCIPLINE_EXPERIENCE_LABELS)
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +333,163 @@ def print_qualitative_comments(df: pd.DataFrame, round_name: str) -> None:
         f"=== {round_name}: Skill set change — free-text comments ===",
     )
 
+    org_type_other = _select_other_freetext_column(df, "organization / business types")
+    if org_type_other:
+        print()
+        _print_nonempty_comments(
+            df, [org_type_other],
+            f"=== {round_name}: Organization type — 'Other' free text ===",
+        )
+
+    role_other = _select_other_freetext_column(df, "current role or position")
+    if role_other:
+        print()
+        _print_nonempty_comments(
+            df, [role_other],
+            f"=== {round_name}: Role / position — 'Other' free text ===",
+        )
+
+    genai_tools_col = "Which GenAI tools do you use primarily in the context of your work?"
+    if genai_tools_col in df.columns:
+        print()
+        _print_nonempty_comments(
+            df, [genai_tools_col],
+            f"=== {round_name}: Primary GenAI tools used — free text (round 2 only) ===",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Descriptive statistics (respondent demographics)
+# ---------------------------------------------------------------------------
+
+def _describe_single_select(df: pd.DataFrame, col: str, categories: list[str]) -> tuple[list[tuple[str, int, float]], int]:
+    s = df[col].dropna()
+    n = len(s)
+    vc = s.value_counts()
+    rows = [(cat, int(vc.get(cat, 0)), (vc.get(cat, 0) / n * 100 if n else 0.0)) for cat in categories]
+    return rows, n
+
+
+def _describe_multi_select(df: pd.DataFrame, cols: list[str], label_func) -> tuple[list[tuple[str, int, float]], int]:
+    # Same convention as plotting._count_column / plot_yes_counts_barh: a
+    # shared per-block n (anyone who answered at least one item in the
+    # block), and non-Yes/No columns (e.g. a free-text "[Other]" write-in)
+    # count every non-null response rather than only "Yes".
+    n = df[cols].dropna(how="all").shape[0]
+    rows = []
+    for col in cols:
+        s = df[col].dropna()
+        is_yes_no = set(s.unique()) <= {'Yes', 'No'}
+        count = int((s == 'Yes').sum()) if is_yes_no else int(s.shape[0])
+        rows.append((label_func(col), count, (count / n * 100 if n else 0.0)))
+    rows.sort(key=lambda r: r[1], reverse=True)
+    return rows, n
+
+
+def _print_single_select_summary(df: pd.DataFrame, col: str, categories: list[str], heading: str) -> None:
+    rows, n = _describe_single_select(df, col, categories)
+    print(f"{heading} (n={n})")
+    for cat, count, pct in rows:
+        print(f"  {cat}: {count} ({pct:.0f}%)")
+
+
+def _print_multi_select_summary(df: pd.DataFrame, cols: list[str], label_func, heading: str) -> None:
+    rows, n = _describe_multi_select(df, cols, label_func)
+    print(f"{heading} (n={n}, % of respondents who selected — multi-select, need not sum to 100%)")
+    for label, count, pct in rows:
+        print(f"  {label}: {count} ({pct:.0f}%)")
+
+
+def print_demographic_summary(df: pd.DataFrame, round_name: str) -> None:
+    """Print n / % per category for every demographic variable named in
+    `loading._DEMOGRAPHIC_ANCHORS` — the columns that decide who counts as a
+    "real" respondent (see loading.py) get a numeric summary here, not just
+    a chart, so exact figures don't have to be read off a bar's pixel width.
+    """
+    print(f"=== {round_name}: Respondent demographics ===\n")
+
+    _print_single_select_summary(
+        df, _select_years_re_experience_column(df), YEARS_RE_EXPERIENCE_LABELS, "Years of RE experience"
+    )
+    print()
+    _print_single_select_summary(df, _select_org_type_column(df), ORG_TYPE_LABELS, "Organization type")
+    print()
+    _print_multi_select_summary(
+        df, list(_select_role_block(df).columns), labels.label_from_brackets, "Role / position"
+    )
+    print()
+    _print_multi_select_summary(
+        df, list(_select_region_block(df).columns), labels.label_from_brackets, "Region"
+    )
+    print()
+    _print_multi_select_summary(
+        df, _select_application_domain_columns(df), labels.label_from_brackets, "Application domain"
+    )
+    print()
+    for activity, short_name in zip(_ACTIVITY_BRACKETS, _ACTIVITY_SHORT_NAMES):
+        _print_single_select_summary(
+            df, _re_discipline_experience_column(df, activity), RE_DISCIPLINE_EXPERIENCE_LABELS,
+            f"RE-discipline self-assessed experience — {short_name}",
+        )
+        print()
+    _print_single_select_summary(df, 'genai_tool_usage_frequency', FREQUENCY_LABELS, "GenAI tool usage frequency")
+    print()
+    _print_single_select_summary(df, 'genai_experience_duration', DURATION_LABELS, "GenAI experience duration")
+
+    participated_col = "Did you participate in our previous survey as well?"
+    if participated_col in df.columns:
+        print()
+        _print_single_select_summary(df, participated_col, PARTICIPATED_BEFORE_LABELS, "Participated in previous survey")
+
+
+def print_demographic_comparison(
+    df1: pd.DataFrame, df2: pd.DataFrame, round1_label: str = "Round 1", round2_label: str = "Round 2"
+) -> None:
+    """Side-by-side round1 vs round2 n/% per category, for the same
+    variables as `print_demographic_summary` — lets a reader see directly
+    whether e.g. round 2 skews more senior or more Europe-heavy than round 1
+    before trusting the RQ1-4 round-to-round comparisons.
+    """
+    print(f"=== {round1_label} vs {round2_label}: Respondent demographics ===\n")
+
+    def _compare_single(col_getter, categories: list[str], heading: str) -> None:
+        rows1, n1 = _describe_single_select(df1, col_getter(df1), categories)
+        rows2, n2 = _describe_single_select(df2, col_getter(df2), categories)
+        by_cat2 = {cat: (count, pct) for cat, count, pct in rows2}
+        print(f"{heading} ({round1_label} n={n1}, {round2_label} n={n2})")
+        for cat, count1, pct1 in rows1:
+            count2, pct2 = by_cat2.get(cat, (0, 0.0))
+            print(f"  {cat}: {round1_label} {count1} ({pct1:.0f}%) | {round2_label} {count2} ({pct2:.0f}%)")
+
+    def _compare_multi(cols_getter, label_func, heading: str) -> None:
+        rows1, n1 = _describe_multi_select(df1, cols_getter(df1), label_func)
+        rows2, n2 = _describe_multi_select(df2, cols_getter(df2), label_func)
+        by_label2 = {label: (count, pct) for label, count, pct in rows2}
+        print(f"{heading} ({round1_label} n={n1}, {round2_label} n={n2}, % who selected)")
+        for label, count1, pct1 in rows1:
+            count2, pct2 = by_label2.get(label, (0, 0.0))
+            print(f"  {label}: {round1_label} {count1} ({pct1:.0f}%) | {round2_label} {count2} ({pct2:.0f}%)")
+
+    _compare_single(_select_years_re_experience_column, YEARS_RE_EXPERIENCE_LABELS, "Years of RE experience")
+    print()
+    _compare_single(_select_org_type_column, ORG_TYPE_LABELS, "Organization type")
+    print()
+    _compare_multi(lambda d: list(_select_role_block(d).columns), labels.label_from_brackets, "Role / position")
+    print()
+    _compare_multi(lambda d: list(_select_region_block(d).columns), labels.label_from_brackets, "Region")
+    print()
+    _compare_multi(_select_application_domain_columns, labels.label_from_brackets, "Application domain")
+    print()
+    for activity, short_name in zip(_ACTIVITY_BRACKETS, _ACTIVITY_SHORT_NAMES):
+        _compare_single(
+            lambda d, a=activity: _re_discipline_experience_column(d, a), RE_DISCIPLINE_EXPERIENCE_LABELS,
+            f"RE-discipline self-assessed experience — {short_name}",
+        )
+        print()
+    _compare_single(lambda d: 'genai_tool_usage_frequency', FREQUENCY_LABELS, "GenAI tool usage frequency")
+    print()
+    _compare_single(lambda d: 'genai_experience_duration', DURATION_LABELS, "GenAI experience duration")
+
 
 # ---------------------------------------------------------------------------
 # Public entry points
@@ -256,19 +500,52 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
     outdir.mkdir(parents=True, exist_ok=True)
     style.apply_paper_style()
 
-    # Demographics
-    domain_counts = _application_domain_counts(df)
-    plt.figure(figsize=(12, 8))
-    sns.barplot(x=domain_counts.index, y=domain_counts.values)
-    plt.xticks(rotation=90)
-    plt.title('Distribution of Application Domains Worked In')
-    plt.xlabel('Application Domain')
-    plt.ylabel('Number of Respondents')
-    plt.tight_layout()
-    plt.savefig(outdir / "application_domains.pdf", bbox_inches="tight")
-    plt.show()
-
-    # Demographics: GenAI usage frequency / experience duration
+    # Demographics: application domain, region, role, organization type,
+    # years of RE experience, self-assessed RE-discipline experience, GenAI
+    # usage frequency / experience duration. Every variable named in
+    # loading._DEMOGRAPHIC_ANCHORS gets a chart here.
+    plotting.plot_yes_counts_barh(
+        [(round_name, df[_select_application_domain_columns(df)])],
+        title="Distribution of Application Domains Worked In",
+        ylabel="Application Domain",
+        label_func=labels.label_from_brackets,
+        savepath=str(outdir / "application_domains.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        [(round_name, _select_role_block(df))],
+        title="Role / Position",
+        ylabel="Role",
+        label_func=labels.label_from_brackets,
+        savepath=str(outdir / "role.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        [(round_name, _select_region_block(df))],
+        title="Region",
+        ylabel="Region",
+        label_func=labels.label_from_brackets,
+        savepath=str(outdir / "region.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        [(round_name, _org_type_block(df))],
+        title="Organization Type",
+        ylabel="Organization Type",
+        label_func=lambda cat: cat,
+        savepath=str(outdir / "organization_type.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        [(round_name, _years_of_re_experience_block(df))],
+        title="Years of RE Experience",
+        ylabel="Years of Experience",
+        label_func=lambda cat: cat,
+        savepath=str(outdir / "years_of_re_experience.pdf"),
+    )
+    plotting.plot_stacked_percentage_barh(
+        [(round_name, _re_discipline_experience_df(df))],
+        categories=RE_DISCIPLINE_EXPERIENCE_LABELS,
+        colors=style.COLORS['experience_greens'],
+        title="Self-Assessed RE-Discipline Experience",
+        savepath=str(outdir / "re_discipline_experience.pdf"),
+    )
     plotting.plot_stacked_percentage_barh(
         [(round_name, _tool_usage_frequency_df(df))],
         categories=FREQUENCY_LABELS,
@@ -283,6 +560,17 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         title="GenAI Experience Duration",
         savepath=str(outdir / "genai_experience_duration.pdf"),
     )
+    participated_col = "Did you participate in our previous survey as well?"
+    if participated_col in df.columns:
+        plotting.plot_yes_counts_barh(
+            [(round_name, _participated_before_block(df))],
+            title="Participated in Previous Survey",
+            ylabel="Response",
+            label_func=lambda cat: cat,
+            savepath=str(outdir / "participated_before.pdf"),
+        )
+
+    print_demographic_summary(df, round_name)
 
     # RQ1: usage
     plotting.plot_stacked_percentage_barh(
@@ -358,6 +646,51 @@ def generate_comparison_report(
 
     rounds_of = lambda f: [(round1_label, f(df1)), (round2_label, f(df2))]
 
+    # Demographics — same variables/order as generate_round_report. No
+    # comparison version for "participated in previous survey" (round2-only
+    # question, no round1 counterpart to pair against).
+    plotting.plot_yes_counts_barh(
+        rounds_of(lambda df: df[_select_application_domain_columns(df)]),
+        title="Distribution of Application Domains Worked In",
+        ylabel="Application Domain",
+        label_func=labels.label_from_brackets,
+        savepath=str(outdir / "application_domains_comparison.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        rounds_of(_select_role_block),
+        title="Role / Position",
+        ylabel="Role",
+        label_func=labels.label_from_brackets,
+        savepath=str(outdir / "role_comparison.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        rounds_of(_select_region_block),
+        title="Region",
+        ylabel="Region",
+        label_func=labels.label_from_brackets,
+        savepath=str(outdir / "region_comparison.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        rounds_of(_org_type_block),
+        title="Organization Type",
+        ylabel="Organization Type",
+        label_func=lambda cat: cat,
+        savepath=str(outdir / "organization_type_comparison.pdf"),
+    )
+    plotting.plot_yes_counts_barh(
+        rounds_of(_years_of_re_experience_block),
+        title="Years of RE Experience",
+        ylabel="Years of Experience",
+        label_func=lambda cat: cat,
+        savepath=str(outdir / "years_of_re_experience_comparison.pdf"),
+    )
+    plotting.plot_stacked_percentage_barh(
+        rounds_of(_re_discipline_experience_df),
+        categories=RE_DISCIPLINE_EXPERIENCE_LABELS,
+        colors=style.COLORS['experience_greens'],
+        title="Self-Assessed RE-Discipline Experience",
+        savepath=str(outdir / "re_discipline_experience_comparison.pdf"),
+    )
     plotting.plot_stacked_percentage_barh(
         rounds_of(_tool_usage_frequency_df),
         categories=FREQUENCY_LABELS,
@@ -372,6 +705,8 @@ def generate_comparison_report(
         title="GenAI Experience Duration",
         savepath=str(outdir / "genai_experience_duration_comparison.pdf"),
     )
+
+    print_demographic_comparison(df1, df2, round1_label, round2_label)
 
     plotting.plot_stacked_percentage_barh(
         rounds_of(_usage_percentage_df),

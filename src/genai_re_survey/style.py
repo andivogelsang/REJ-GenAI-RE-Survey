@@ -59,6 +59,13 @@ COLORS = {
     "frequency_purples": ["#F2F0F7", "#CBC9E2", "#9E9AC8", "#756BB1", "#54278F"],
     # Catch-all category (e.g. tool-usage frequency's free-text "Other").
     "neutral_other": "#999999",
+
+    # Ordered scale (low -> high) for the RE-discipline self-assessed
+    # experience chart (No Experience -> Beginner -> ... -> Expert). Distinct
+    # hue from frequency_purples/use_blues/harm_oranges. Validated with the
+    # dataviz skill's palette validator (5-step ordinal: monotone lightness,
+    # single hue, light end clears 2:1 contrast against the chart surface).
+    "experience_greens": ["#74C476", "#41AB5D", "#238B45", "#006D2C", "#00441B"],
 }
 
 # Round-distinguishing styling for grouped/paired bars (comparison plots).
