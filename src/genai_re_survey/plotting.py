@@ -120,7 +120,6 @@ def _plot_stacked_percentage_barh_single(
     plot_df: pd.DataFrame,   # index = item key (no n); columns = categories + 'n'
     categories: list[str],
     colors: list[str],
-    title: str,
     xlabel: str,
     savepath: str,
 ):
@@ -151,7 +150,6 @@ def _plot_stacked_percentage_barh_single(
     ax.set_xlabel(xlabel)
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
-    ax.set_title(title)
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
@@ -172,14 +170,13 @@ def plot_stacked_percentage_barh(
     rounds: list[tuple[str, pd.DataFrame]],
     categories: list[str],
     colors: list[str],
-    title: str,
     savepath: str,
     xlabel: str = 'Percentage of Respondents',
     significant_items: set[str] | None = None,
 ):
     if len(rounds) == 1:
         _, df = rounds[0]
-        return _plot_stacked_percentage_barh_single(df, categories, colors, title, xlabel, savepath)
+        return _plot_stacked_percentage_barh_single(df, categories, colors, xlabel, savepath)
 
     n_rounds = len(rounds)
 
@@ -222,7 +219,6 @@ def plot_stacked_percentage_barh(
     ax.set_xlabel(xlabel)
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
-    ax.set_title(title)
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
@@ -264,7 +260,6 @@ def _count_column(s: pd.Series) -> int:
 
 def _plot_yes_counts_barh_single(
     df: pd.DataFrame,
-    title: str,
     ylabel: str,
     label_func,
     savepath: str
@@ -299,7 +294,6 @@ def _plot_yes_counts_barh_single(
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
 
     ax.xaxis.grid(True)
     ax.yaxis.grid(False)
@@ -310,7 +304,6 @@ def _plot_yes_counts_barh_single(
 
 def plot_yes_counts_barh(
     rounds: list[tuple[str, pd.DataFrame]],
-    title: str,
     ylabel: str,
     label_func,
     savepath: str,
@@ -318,7 +311,7 @@ def plot_yes_counts_barh(
 ):
     if len(rounds) == 1:
         _, df = rounds[0]
-        return _plot_yes_counts_barh_single(df, title, ylabel, label_func, savepath)
+        return _plot_yes_counts_barh_single(df, ylabel, label_func, savepath)
 
     # Rounds differ in total respondents (e.g. round 1 n=150 vs round 2
     # n=79), so raw "yes" counts aren't comparable side by side — convert
@@ -362,7 +355,6 @@ def plot_yes_counts_barh(
     ax.set_xlim(0, 100)
     ax.set_xticks(np.arange(0, 101, 20))
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
     ax.legend(handles=round_handles, loc='lower center',
               bbox_to_anchor=(0.5, 1.02), ncol=n_rounds, frameon=False)
 
@@ -380,7 +372,6 @@ def plot_yes_counts_barh(
 
 def _plot_diverging_usefulness_harmfulness_single(
     df: pd.DataFrame,
-    title_prefix: str,
     scale1_key: str = "Scale 1",
     scale2_key: str = "Scale 2",
     exclude_value: str = "I don't know",
@@ -496,8 +487,6 @@ def _plot_diverging_usefulness_harmfulness_single(
             fontsize=9
         )
 
-    ax.set_title(title_prefix)
-
     if savepath:
         plt.savefig(savepath, format=savepath.split('.')[-1], bbox_inches="tight")
     plt.show()
@@ -505,7 +494,6 @@ def _plot_diverging_usefulness_harmfulness_single(
 
 def plot_diverging_usefulness_harmfulness(
     rounds: list[tuple[str, pd.DataFrame]],
-    title_prefix: str,
     scale1_key: str = "Scale 1",
     scale2_key: str = "Scale 2",
     exclude_value: str = "I don't know",
@@ -518,7 +506,7 @@ def plot_diverging_usefulness_harmfulness(
     if len(rounds) == 1:
         _, df = rounds[0]
         return _plot_diverging_usefulness_harmfulness_single(
-            df, title_prefix, scale1_key, scale2_key, exclude_value, width, show_legend, savepath
+            df, scale1_key, scale2_key, exclude_value, width, show_legend, savepath
         )
 
     n_rounds = len(rounds)
@@ -650,8 +638,6 @@ def plot_diverging_usefulness_harmfulness(
             title=None,
             fontsize=9,
         )
-
-    ax.set_title(title_prefix)
 
     if savepath:
         plt.savefig(savepath, format=savepath.split('.')[-1], bbox_inches="tight")

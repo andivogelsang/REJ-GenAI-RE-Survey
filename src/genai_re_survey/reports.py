@@ -701,35 +701,30 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
     # loading._DEMOGRAPHIC_ANCHORS gets a chart here.
     plotting.plot_yes_counts_barh(
         [(round_name, df[_select_application_domain_columns(df)])],
-        title="Distribution of Application Domains Worked In",
         ylabel="Application Domain",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "application_domains.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _select_role_block(df))],
-        title="Role / Position",
         ylabel="Role",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "role.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _select_region_block(df))],
-        title="Region",
         ylabel="Region",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "region.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _org_type_block(df))],
-        title="Organization Type",
         ylabel="Organization Type",
         label_func=lambda cat: cat,
         savepath=str(outdir / "organization_type.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _years_of_re_experience_block(df))],
-        title="Years of RE Experience",
         ylabel="Years of Experience",
         label_func=lambda cat: cat,
         savepath=str(outdir / "years_of_re_experience.pdf"),
@@ -738,28 +733,24 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         [(round_name, _re_discipline_experience_df(df))],
         categories=RE_DISCIPLINE_EXPERIENCE_LABELS,
         colors=style.COLORS['experience_greens'],
-        title="Self-Assessed RE-Discipline Experience",
         savepath=str(outdir / "re_discipline_experience.pdf"),
     )
     plotting.plot_stacked_percentage_barh(
         [(round_name, _tool_usage_frequency_df(df))],
         categories=FREQUENCY_LABELS,
         colors=style.COLORS['frequency_purples'] + [style.COLORS['neutral_other']],
-        title="GenAI Tool Usage Frequency",
         savepath=str(outdir / "genai_tool_usage_frequency.pdf"),
     )
     plotting.plot_stacked_percentage_barh(
         [(round_name, _experience_duration_df(df))],
         categories=DURATION_LABELS,
         colors=style.COLORS['frequency_purples'],
-        title="GenAI Experience Duration",
         savepath=str(outdir / "genai_experience_duration.pdf"),
     )
     participated_col = "Did you participate in our previous survey as well?"
     if participated_col in df.columns:
         plotting.plot_yes_counts_barh(
             [(round_name, _participated_before_block(df))],
-            title="Participated in Previous Survey",
             ylabel="Response",
             label_func=lambda cat: cat,
             savepath=str(outdir / "participated_before.pdf"),
@@ -772,21 +763,18 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         [(round_name, _usage_percentage_df(df))],
         categories=['Yes', 'No'],
         colors=[style.COLORS['yes'], style.COLORS['no']],
-        title="GenAI Usage by RE Discipline",
         savepath=str(outdir / "usage.pdf"),
     )
 
     # RQ2: prevention + threats
     plotting.plot_yes_counts_barh(
         [(round_name, _select_prevention_block(df))],
-        title="Reasons Preventing GenAI Usage in RE",
         ylabel="Reason",
         label_func=labels.label_strip_brackets_and_parens,
         savepath=str(outdir / "prevention.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _select_threats_block(df))],
-        title="Perceived Threats",
         ylabel="Limitation / Threat",
         label_func=labels.label_strip_brackets_and_parens,
         savepath=str(outdir / "threats.pdf"),
@@ -797,7 +785,6 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         phase_df = _select_phase_block(df, phase_marker)
         plotting.plot_diverging_usefulness_harmfulness(
             [(round_name, phase_df)],
-            title_prefix=title,
             savepath=str(outdir / f"{phase_key}_assessment.pdf"),
             show_legend=False,
         )
@@ -807,19 +794,16 @@ def generate_round_report(df: pd.DataFrame, round_name: str, outdir: str | Path)
         [(round_name, _skills_percentage_df(df))],
         categories=['Yes', 'No'],
         colors=[style.COLORS['yes'], style.COLORS['no']],
-        title="Skill Set Change",
         savepath=str(outdir / "skills.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _select_training_interest_block(df))],
-        title="Training Interest",
         ylabel="Training Interest",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_interest.pdf"),
     )
     plotting.plot_yes_counts_barh(
         [(round_name, _select_training_format_block(df))],
-        title="Preferred Training Formats",
         ylabel="Training Format",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_format.pdf"),
@@ -850,7 +834,6 @@ def generate_comparison_report(
     # question, no round1 counterpart to pair against).
     plotting.plot_yes_counts_barh(
         rounds_of(lambda df: df[_select_application_domain_columns(df)]),
-        title="Distribution of Application Domains Worked In",
         ylabel="Application Domain",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "application_domains_comparison.pdf"),
@@ -858,7 +841,6 @@ def generate_comparison_report(
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_role_block),
-        title="Role / Position",
         ylabel="Role",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "role_comparison.pdf"),
@@ -866,7 +848,6 @@ def generate_comparison_report(
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_region_block),
-        title="Region",
         ylabel="Region",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "region_comparison.pdf"),
@@ -874,7 +855,6 @@ def generate_comparison_report(
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_org_type_block),
-        title="Organization Type",
         ylabel="Organization Type",
         label_func=lambda cat: cat,
         savepath=str(outdir / "organization_type_comparison.pdf"),
@@ -882,15 +862,15 @@ def generate_comparison_report(
     )
     # Years of RE experience is tested as one ordinal (Mann-Whitney) variable,
     # not per-category — so unlike the other demographic bar charts, no
-    # single bar "is" the significant result. Marked in the title instead of
-    # on a bar.
-    years_re_title = "Years of RE Experience"
+    # single bar "is" the significant result. Marked on the ylabel instead of
+    # on a bar (there's no title to carry it now that figures rely on the
+    # paper's caption for that).
+    years_re_ylabel = "Years of Experience"
     if 'Years of RE experience' in _significant_set(significance['Demographics: Experience (ordinal)']):
-        years_re_title += " (distribution differs significantly *)"
+        years_re_ylabel += " (distribution differs significantly *)"
     plotting.plot_yes_counts_barh(
         rounds_of(_years_of_re_experience_block),
-        title=years_re_title,
-        ylabel="Years of Experience",
+        ylabel=years_re_ylabel,
         label_func=lambda cat: cat,
         savepath=str(outdir / "years_of_re_experience_comparison.pdf"),
     )
@@ -898,7 +878,6 @@ def generate_comparison_report(
         rounds_of(_re_discipline_experience_df),
         categories=RE_DISCIPLINE_EXPERIENCE_LABELS,
         colors=style.COLORS['experience_greens'],
-        title="Self-Assessed RE-Discipline Experience",
         savepath=str(outdir / "re_discipline_experience_comparison.pdf"),
         significant_items=_significant_with_prefix_stripped(
             significance['Demographics: Experience (ordinal)'], 'RE-discipline experience — '
@@ -908,14 +887,12 @@ def generate_comparison_report(
         rounds_of(_tool_usage_frequency_df),
         categories=FREQUENCY_LABELS,
         colors=style.COLORS['frequency_purples'] + [style.COLORS['neutral_other']],
-        title="GenAI Tool Usage Frequency",
         savepath=str(outdir / "genai_tool_usage_frequency_comparison.pdf"),
     )
     plotting.plot_stacked_percentage_barh(
         rounds_of(_experience_duration_df),
         categories=DURATION_LABELS,
         colors=style.COLORS['frequency_purples'],
-        title="GenAI Experience Duration",
         savepath=str(outdir / "genai_experience_duration_comparison.pdf"),
     )
 
@@ -925,13 +902,11 @@ def generate_comparison_report(
         rounds_of(_usage_percentage_df),
         categories=['Yes', 'No'],
         colors=[style.COLORS['yes'], style.COLORS['no']],
-        title="GenAI Usage by RE Discipline",
         savepath=str(outdir / "usage_comparison.pdf"),
         significant_items=_significant_set(significance['RQ1: Usage by RE discipline']),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_prevention_block),
-        title="Reasons Preventing GenAI Usage in RE",
         ylabel="Reason",
         label_func=labels.label_strip_brackets_and_parens,
         savepath=str(outdir / "prevention_comparison.pdf"),
@@ -939,7 +914,6 @@ def generate_comparison_report(
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_threats_block),
-        title="Perceived Threats",
         ylabel="Limitation / Threat",
         label_func=labels.label_strip_brackets_and_parens,
         savepath=str(outdir / "threats_comparison.pdf"),
@@ -949,7 +923,6 @@ def generate_comparison_report(
         significant_use, significant_harm = _phase_significant_sets(significance[f'RQ3: {title}'])
         plotting.plot_diverging_usefulness_harmfulness(
             rounds_of(lambda df, m=phase_marker: _select_phase_block(df, m)),
-            title_prefix=title,
             savepath=str(outdir / f"{phase_key}_assessment_comparison.pdf"),
             show_legend=False,
             significant_use=significant_use,
@@ -961,13 +934,11 @@ def generate_comparison_report(
         rounds_of(_skills_percentage_df),
         categories=['Yes', 'No'],
         colors=[style.COLORS['yes'], style.COLORS['no']],
-        title="Skill Set Change",
         savepath=str(outdir / "skills_comparison.pdf"),
         significant_items=_significant_subset(rq4_family, {"Skill set will change"}),
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_training_interest_block),
-        title="Training Interest",
         ylabel="Training Interest",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_interest_comparison.pdf"),
@@ -975,7 +946,6 @@ def generate_comparison_report(
     )
     plotting.plot_yes_counts_barh(
         rounds_of(_select_training_format_block),
-        title="Preferred Training Formats",
         ylabel="Training Format",
         label_func=labels.label_from_brackets,
         savepath=str(outdir / "training_format_comparison.pdf"),
