@@ -1,6 +1,10 @@
 cff-version: 1.2.0
-message: "If you use this code or data, please cite the paper below. A journal extension covering round 2 is in preparation; this entry will be updated once it has its own DOI."
-title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+message: "If you use this code or data, please cite the preferred journal-article
+  entry below (round 1 + round 2, the manuscript this repository now supports).
+  It is still in preparation, so venue, volume, and DOI are not yet filled in --
+  update them here once the paper is accepted. The original REFSQ 2026
+  conference paper (round 1 only) is listed under references as prior work."
+title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice – A Replicated Study"
 type: software
 authors:
   - family-names: Hess
@@ -27,9 +31,12 @@ authors:
     given-names: Alexander
     orcid: "https://orcid.org/0000-0001-8217-7149"
     affiliation: "CBS University of Applied Sciences"
+  - family-names: Fricker
+    given-names: Samuel
+    affiliation: "FHNW University of Applied Sciences and Arts Northwestern Switzerland"
 preferred-citation:
-  type: conference-paper
-  title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+  type: article
+  title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice – A Replicated Study"
   authors:
     - family-names: Hess
       given-names: Anne
@@ -43,10 +50,48 @@ preferred-citation:
       given-names: Sylwia
     - family-names: Rachmann
       given-names: Alexander
-  conference:
-    name: "REFSQ 2026"
+    - family-names: Fricker
+      given-names: Samuel
+  notes: "Manuscript in preparation / not yet submitted at the time this entry
+    was written. journal, volume, issue, pages, and doi fields are intentionally
+    omitted until assigned -- fill them in once available, and remove this note."
 references:
-  - type: dataset
+  - type: conference-paper
+    title: "Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+    authors:
+      - family-names: Hess
+        given-names: Anne
+      - family-names: Vogelsang
+        given-names: Andreas
+      - family-names: Franch
+        given-names: Xavier
+      - family-names: Herrmann
+        given-names: Andrea
+      - family-names: Kopczyńska
+        given-names: Sylwia
+      - family-names: Rachmann
+        given-names: Alexander
+    conference:
+      name: "REFSQ 2026"
+    doi: "10.1007/978-3-032-21423-2_22"
+    notes: "Round-1-only conference paper this journal article extends. Superseded
+      by preferred-citation above as the citation for this repository, but still
+      the citable record for the original round-1-only study and its Zenodo
+      dataset (see the dataset entry below)."
+  - type: data
     title: "Artifact - Opportunities and Limitations of GenAI in RE: Viewpoints from Practice"
+    authors:
+      - family-names: Hess
+        given-names: Anne
+      - family-names: Vogelsang
+        given-names: Andreas
+      - family-names: Franch
+        given-names: Xavier
+      - family-names: Herrmann
+        given-names: Andrea
+      - family-names: Kopczyńska
+        given-names: Sylwia
+      - family-names: Rachmann
+        given-names: Alexander
     doi: "10.5281/zenodo.18207273"
     notes: "Round-1 dataset (data/round1/ and codebook/round1/ in this repository are a copy of this deposit)."

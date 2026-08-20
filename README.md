@@ -1,16 +1,22 @@
 # GenAI in RE: Survey Analysis
 
-Replication package for the survey study on Generative AI usage in
-Requirements Engineering, run in collaboration with the IREB Special
-Interest Group on AI & RE (SIG#AIREB).
+Replication package for *"Opportunities and Limitations of GenAI in RE:
+Viewpoints from Practice — A Replicated Study"*, a journal extension (round 1
++ round 2 + a round-to-round comparison) of a survey study on Generative AI
+usage in Requirements Engineering, run in collaboration with the IREB
+Special Interest Group on AI & RE (SIG#AIREB). See `CITATION.cff` for the
+current citation; it will be updated with venue/DOI once the journal article
+is accepted.
 
-- **Round 1** — data collection Nov 2024–Mar 2025, reported in *"Opportunities
-  and Limitations of GenAI in RE: Viewpoints from Practice"* (REFSQ 2026).
-  Dataset archived at Zenodo: [10.5281/zenodo.18207273](https://doi.org/10.5281/zenodo.18207273)
+- **Round 1** — data collection Nov 2024–Mar 2025. Originally reported on
+  its own in *"Opportunities and Limitations of GenAI in RE: Viewpoints from
+  Practice"* (REFSQ 2026); that conference paper is now prior work this
+  journal extension builds on, not the primary citation for this repository
+  (see `CITATION.cff`). Dataset archived at Zenodo:
+  [10.5281/zenodo.18207273](https://doi.org/10.5281/zenodo.18207273)
   (CC-BY-4.0).
-- **Round 2** — a second wave of responses collected for a journal extension
-  of the same study, reporting round 1, round 2, and a comparison between
-  them.
+- **Round 2** — a second wave of responses collected for the journal
+  extension.
 
 The survey was anonymous and collected no personal data (see the Construct
 Validity discussion in the round-1 paper); the response data is published
