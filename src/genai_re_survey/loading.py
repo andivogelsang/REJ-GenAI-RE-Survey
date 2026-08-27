@@ -14,6 +14,9 @@ Both loaders return a DataFrame where:
   (_drop_demographic_only_responses) — these respondents reached the
   demographics page and then left before any RQ1-4 content, so they never
   actually engaged with the survey's research questions
+- respondents affiliated with a university/research organization *and*
+  early-career in RE (no experience, or less than 2 years) are also dropped
+  (_drop_academic_early_career_responses) — see that function's docstring
 - `df.attrs["round"]` is set, so downstream code (plotting, reports) knows
   which round a frame came from without it being threaded through every
   call explicitly.
@@ -99,6 +102,34 @@ def _drop_demographic_only_responses(df: pd.DataFrame) -> pd.DataFrame:
     return df[df[content_cols].notna().any(axis=1)].reset_index(drop=True)
 
 
+# Values used by _drop_academic_early_career_responses. Matches
+# reports.YEARS_RE_EXPERIENCE_LABELS' two lowest categories and the
+# organization-type category exactly as LimeSurvey exports it.
+_ACADEMIC_ORG_VALUE = "University / Research"
+_EARLY_CAREER_YEARS_VALUES = {"none / new to RE", "< 2 years"}
+
+
+def _drop_academic_early_career_responses(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop respondents who are both affiliated with a university/research
+    organization and early-career in RE (no RE experience, or less than 2
+    years).
+
+    Motivated by a round-2 "purely academic respondent" overlap analysis
+    across organization type, years of RE experience, and application
+    domain: this specific combination consistently paired with an
+    unspecific or absent application domain (no grounding in RE practice),
+    unlike two combinations that were deliberately *not* excluded --
+    university/research org with a research application domain and 3+
+    years of experience (plausibly consultancy work), and early-career with
+    a research domain but a non-academic organization (plausibly a junior
+    researcher in an industry research lab).
+    """
+    org_col = next(c for c in df.columns if schema.ORG_TYPE_ANCHOR in c and not c.endswith("[Other]"))
+    years_col = next(c for c in df.columns if schema.YEARS_RE_EXPERIENCE_ANCHOR in c)
+    exclude = (df[org_col] == _ACADEMIC_ORG_VALUE) & df[years_col].isin(_EARLY_CAREER_YEARS_VALUES)
+    return df[~exclude].reset_index(drop=True)
+
+
 def load_round1(path: str | Path = _DEFAULT_ROUND1_PATH) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = _drop_metadata_columns(df)
@@ -106,6 +137,7 @@ def load_round1(path: str | Path = _DEFAULT_ROUND1_PATH) -> pd.DataFrame:
     df = _rename_bracket_labels(df, schema.LABEL_ALIASES)
     df = _rename_core_questions(df, "round1")
     df = _drop_demographic_only_responses(df)
+    df = _drop_academic_early_career_responses(df)
     df.attrs["round"] = "round1"
     return df
 
@@ -116,5 +148,6 @@ def load_round2(path: str | Path = _DEFAULT_ROUND2_PATH) -> pd.DataFrame:
     df = _drop_empty_responses(df)
     df = _rename_core_questions(df, "round2")
     df = _drop_demographic_only_responses(df)
+    df = _drop_academic_early_career_responses(df)
     df.attrs["round"] = "round2"
     return df

@@ -71,17 +71,15 @@ def _select_region_block(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _select_org_type_column(df: pd.DataFrame) -> str:
-    anchor = "organization / business types"
     for c in df.columns:
-        if anchor in c and not c.endswith("[Other]"):
+        if schema.ORG_TYPE_ANCHOR in c and not c.endswith("[Other]"):
             return c
     raise KeyError("organization type column not found")
 
 
 def _select_years_re_experience_column(df: pd.DataFrame) -> str:
-    anchor = "How many years of professional experience do you have in Requirements Engineering"
     for c in df.columns:
-        if anchor in c:
+        if schema.YEARS_RE_EXPERIENCE_ANCHOR in c:
             return c
     raise KeyError("years-of-RE-experience column not found")
 

@@ -60,6 +60,13 @@ METADATA_COLUMN_PATTERNS = [
 # name when renaming it via LABEL_ALIASES.
 BRACKET_RE = re.compile(r"\[(.*?)\]")
 
+# Substring anchors for two demographic columns needed by both loading.py
+# (the academic/early-career exclusion filter) and reports.py (the
+# organization-type and years-of-RE-experience charts/summaries) — shared
+# here so the two can't drift apart.
+ORG_TYPE_ANCHOR = "organization / business types"
+YEARS_RE_EXPERIENCE_ANCHOR = "How many years of professional experience do you have in Requirements Engineering"
+
 
 def _bracket_labels(columns) -> set[str]:
     labels: set[str] = set()
