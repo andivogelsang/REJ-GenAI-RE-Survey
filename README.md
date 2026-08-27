@@ -27,7 +27,9 @@ as-is.
 ```
 data/
 ├── round1/          raw export + questionnaire + supplementary materials
+│   └── free-form/   per-question exports of "Other"/comment free-text responses
 └── round2/          raw export
+    └── free-form/   per-question exports of "Other"/comment free-text responses
 codebook/
 └── round1/          qualitative coding schema (14 themes / 52 codes)
 src/genai_re_survey/ shared loading, schema-alignment, plotting, and report code

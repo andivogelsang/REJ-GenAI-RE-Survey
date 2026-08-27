@@ -357,6 +357,105 @@ def print_qualitative_comments(df: pd.DataFrame, round_name: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Free-text export to individual .txt files, one per survey question, for
+# manual review (as opposed to print_qualitative_comments, which covers a
+# subset of these inline in a notebook's output). Response ID (not row
+# position, which isn't stable across filtering) identifies each response.
+# ---------------------------------------------------------------------------
+
+def _select_other_comment_column(df: pd.DataFrame, anchor: str) -> str | None:
+    for c in df.columns:
+        if anchor in c and c.endswith("[Other comment]"):
+            return c
+    return None
+
+
+def _write_freetext_file(df: pd.DataFrame, columns: list[str], question: str, path: Path) -> int:
+    """Write one .txt file for one logical survey question (which may span
+    several bracketed sub-item columns, e.g. one comment field per RE
+    activity). Returns the number of non-empty responses written, across
+    all sub-items, so callers can report a summary without re-reading files.
+    """
+    lines = [question, "=" * len(question), ""]
+    n_written = 0
+    for col in columns:
+        non_empty = df[["Response ID", col]].dropna(subset=[col])
+        if non_empty.empty:
+            continue
+        if len(columns) > 1 and schema.BRACKET_RE.search(col):
+            lines.append(f"--- {labels.label_from_brackets(col)} ---")
+        for _, row in non_empty.iterrows():
+            lines.append(f"[{int(row['Response ID'])}] {row[col]}")
+            n_written += 1
+        lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return n_written
+
+
+def export_freetext_responses(df: pd.DataFrame, round_name: str, outdir: str | Path) -> None:
+    """Export every free-text response in the survey -- both "Other" write-ins
+    attached to closed questions and the separate comment boxes attached to
+    the usage/training-interest/skills questions -- to one .txt file per
+    logical question, for manual review outside the notebooks/reports
+    pipeline (e.g. deciding what to quote in the paper).
+    """
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    questions: list[tuple[str, str, list[str]]] = []  # (filename, question label, columns)
+
+    def other_col(anchor: str) -> list[str]:
+        c = _select_other_freetext_column(df, anchor)
+        return [c] if c else []
+
+    questions.append(("application_domain_other", "Application domain — 'Other' free text",
+                       other_col("In which application domain(s) have you worked")))
+    questions.append(("organization_type_other", "Organization type — 'Other' free text",
+                       other_col("organization / business types")))
+    questions.append(("role_other", "Role / position — 'Other' free text",
+                       other_col("current role or position")))
+    questions.append(("genai_tool_usage_frequency_other", "GenAI tool usage frequency — 'Other' free text",
+                       other_col("How often do you use")))
+
+    usage_other = other_col("did you use / apply GenAI")
+    usage_other_comment = _select_other_comment_column(df, "did you use / apply GenAI")
+    questions.append(("usage_comments", "GenAI usage per RE activity — free-text comments",
+                       list(_select_usage_comment_block(df).columns) + usage_other
+                       + ([usage_other_comment] if usage_other_comment else [])))
+
+    questions.append(("prevention_other", "Reasons preventing GenAI usage — 'Other' free text",
+                       other_col("reasons prevent")))
+    questions.append(("threats_other", "Perceived threats/limitations — 'Other' free text",
+                       other_col("concerning AI in RE")))
+
+    interest_other = other_col("would you like to receive")
+    interest_other_comment = _select_other_comment_column(df, "would you like to receive")
+    questions.append(("training_interest_comments", "Training interest per RE activity — free-text comments",
+                       list(_select_training_interest_comment_block(df).columns) + interest_other
+                       + ([interest_other_comment] if interest_other_comment else [])))
+
+    questions.append(("training_format_other", "Preferred training format — 'Other' free text",
+                       other_col("training format would you prefer")))
+    questions.append(("skills_comment", "Skill set change — free-text comment",
+                       [_skills_comment_column(df)]))
+
+    final_remarks_col = "Are there any further comments, remarks or ideas that you would like to share with us?"
+    if final_remarks_col in df.columns:
+        questions.append(("final_remarks", "Closing free-text remarks", [final_remarks_col]))
+
+    genai_tools_col = "Which GenAI tools do you use primarily in the context of your work?"
+    if genai_tools_col in df.columns:
+        questions.append(("genai_tools_used", "Primary GenAI tools used — free text (round 2 only)",
+                           [genai_tools_col]))
+
+    print(f"=== {round_name}: free-text export to {outdir} ===")
+    for filename, question, cols in questions:
+        cols = [c for c in cols if c]
+        n = _write_freetext_file(df, cols, question, outdir / f"{filename}.txt")
+        print(f"  {filename}.txt: {n} response(s)")
+
+
+# ---------------------------------------------------------------------------
 # Descriptive statistics (respondent demographics)
 # ---------------------------------------------------------------------------
 
